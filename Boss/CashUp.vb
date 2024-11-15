@@ -17,7 +17,7 @@ Public Class CashUp
     Private Sub CashUp_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         'TODO: This line of code loads data into the 'BossDataSet.Totals' table. You can move, or remove it, as needed.
         Me.TotalsTableAdapter.Fill(Me.BossDataSet.Totals)
-        If Login.txtPassword.Text = "hebi0800" Then 'Access to change the new file
+        If Login.txtPassword.Text = "hebi0800" Then 'Access to edit the supervisor file
             rtfCashUp.Enabled = True
             btnReset.Visible = True
         Else
