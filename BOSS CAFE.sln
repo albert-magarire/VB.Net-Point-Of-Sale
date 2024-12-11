@@ -14,7 +14,7 @@ Global
 		{7515EF54-A227-431A-8623-5F85D352CD48}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7515EF54-A227-431A-8623-5F85D352CD48}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
+	GlobalSection(SolutionProperties) = presolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
