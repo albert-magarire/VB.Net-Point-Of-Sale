@@ -1,11 +1,16 @@
 ﻿Imports System.Data.OleDb
+Imports System.Collections.Generic
+
 Public Class Entries
-    Dim cusd As Boolean = True
-    Dim DTotal As Integer = 0
-    Dim rtotal As Integer = 0
-    Dim total, zwdtotal As Integer
-    Dim cype, sype, bype As String
-    Dim pcount As Integer = 0
+    Private isUSD As Boolean = True
+    Private dailyTotal As Decimal = 0
+    Private runningTotal As Decimal = 0
+    Private currentItemTotal, currentItemZWDTotal As Decimal
+    Private chickenType, steakType, breakfastType As String
+    Private productCount As Integer = 0
+    Private currentReceiptNumber As String = "001"
+    Private currentSale As New List(Of SaleData)
+    Private dailyTotals As DailyTotalsData
     Private Sub ProductsBindingNavigatorSaveItem_Click(sender As Object, e As EventArgs) Handles ProductsBindingNavigatorSaveItem.Click
         Me.Validate()
         Me.ProductsBindingSource.EndEdit()
@@ -26,52 +31,89 @@ Public Class Entries
     End Sub
 
     Private Sub Entries_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Timer3.Start()
-        Dim conn As New OleDbConnection
-        conn.ConnectionString = My.Settings.BossConnectionString
-        If conn.State = ConnectionState.Closed Then
-            conn.Open()
-        End If
-        Dim cmd As New OleDbCommand("select * from DTotals where [TDate]='" & Today & "'", conn)
-        Dim data As OleDbDataReader = cmd.ExecuteReader
-        If data.HasRows Then
-            Do While data.Read()
-                If data("NoR").ToString = "" Then
-                    Label2.Text = "01"
-                Else
-                    Label2.Text = "0" & data("NoR").ToString + 1
-                    txtDtotal.Text = data("UTotal").ToString
-                    txtDZTotal.Text = data("ZTotal").ToString
-                End If
-            Loop
-        Else
-            Try
-                Dim sqlconn As New OleDb.OleDbConnection
-                Dim connstring, command As String
-                connstring = My.Settings.BossConnectionString
-                sqlconn.ConnectionString = connstring
-                sqlconn.Open()
-                command = "INSERT INTO DTotals([TDate],[UTotal],[ZTotal],[NoR])VALUES('" & Today & "','0','0','0')"
-                Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
-                sql.ExecuteNonQuery()
-                MsgBox("Database set for the day! You can start entering today's sales!", MsgBoxStyle.Information, "Database Ready!")
-            Catch ex As Exception
-                MessageBox.Show(ex.Message, "Failed to Connect to Database! Please reboot computer!")
-            End Try
-        End If
-        'TODO: This line of code loads data into the 'BossDataSet.DTotals' table. You can move, or remove it, as needed.
-        Me.DTotalsTableAdapter.Fill(Me.BossDataSet.DTotals)
-        'TODO: This line of code loads data into the 'BossDataSet.Sales' table. You can move, or remove it, as needed.
-        Me.SalesTableAdapter.Fill(Me.BossDataSet.Sales)
-        'TODO: This line of code loads data into the 'BossDataSet.Totals' table. You can move, or remove it, as needed.
-        Me.TotalsTableAdapter.Fill(Me.BossDataSet.Totals)
-        'TODO: This line of code loads data into the 'BossDataSet.Products' table. You can move, or remove it, as needed.
-        Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
-        rtfReceipt.AppendText(vbCrLf + "Date:       " & DateTimePicker1.Value.ToLongDateString)
-        rtfReceipt.AppendText(vbCrLf + "Number     :                       " & "00" + Label2.Text)
-        Timer1.Start()
-        Timer2.Start()
-
+        Try
+            ' Initialize timers
+            Timer3.Start()
+            
+            ' Load daily totals using business logic layer
+            dailyTotals = BusinessLogicLayer.CalculateDailyTotals(DateTime.Today)
+            
+            ' Set up receipt number
+            currentReceiptNumber = BusinessLogicLayer.GenerateReceiptNumber(DateTime.Today)
+            Label2.Text = currentReceiptNumber.PadLeft(3, "0"c)
+            
+            ' Update daily totals display
+            txtDtotal.Text = dailyTotals.UTotal.ToString("F2")
+            txtDZTotal.Text = dailyTotals.ZTotal.ToString("F2")
+            
+            ' Load data using table adapters
+            Me.DTotalsTableAdapter.Fill(Me.BossDataSet.DTotals)
+            Me.SalesTableAdapter.Fill(Me.BossDataSet.Sales)
+            Me.TotalsTableAdapter.Fill(Me.BossDataSet.Totals)
+            Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
+            
+            ' Initialize receipt display
+            InitializeReceiptDisplay()
+            
+            ' Start timers
+            Timer1.Start()
+            Timer2.Start()
+            
+            ' Initialize form controls
+            InitializeFormControls()
+            
+        Catch ex As BusinessLogicException
+            MessageBox.Show($"Error loading form: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Catch ex As Exception
+            MessageBox.Show($"Unexpected error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+    
+    Private Sub InitializeReceiptDisplay()
+        rtfReceipt.Clear()
+        rtfReceipt.AppendText("BOSS CAFE" & vbCrLf)
+        rtfReceipt.AppendText("60 BEDFORD ROAD" & vbCrLf)
+        rtfReceipt.AppendText("AVONDALE" & vbCrLf)
+        rtfReceipt.AppendText("HARARE" & vbCrLf & vbCrLf)
+        rtfReceipt.AppendText("Tel: 0773277464" & vbCrLf)
+        rtfReceipt.AppendText("VAT NO: ---------" & vbCrLf)
+        rtfReceipt.AppendText("---------------------------------------------------------------------------------------------------------------" & vbCrLf)
+        rtfReceipt.AppendText("Date: " & DateTimePicker1.Value.ToLongDateString & vbCrLf)
+        rtfReceipt.AppendText("Number: " & currentReceiptNumber.PadLeft(3, "0"c) & vbCrLf)
+    End Sub
+    
+    Private Sub InitializeFormControls()
+        ' Set up currency display
+        UpdateCurrencyDisplay()
+        
+        ' Initialize category buttons
+        SetupCategoryButtons()
+        
+        ' Set up order types
+        SetupOrderTypes()
+        
+        ' Set up waiter list
+        SetupWaiterList()
+    End Sub
+    
+    Private Sub SetupCategoryButtons()
+        ' This would be populated from database in a real implementation
+        ' For now, we'll use the existing button setup
+    End Sub
+    
+    Private Sub SetupOrderTypes()
+        cmborder.Items.Clear()
+        cmborder.Items.Add("Dine In")
+        cmborder.Items.Add("Take Away")
+        cmborder.Items.Add("Delivery")
+    End Sub
+    
+    Private Sub SetupWaiterList()
+        cmbwaiter.Items.Clear()
+        ' This would be populated from database in a real implementation
+        cmbwaiter.Items.Add("John")
+        cmbwaiter.Items.Add("Mary")
+        cmbwaiter.Items.Add("Peter")
     End Sub
 
     Private Sub cmbwaiter_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbwaiter.SelectedIndexChanged
@@ -105,86 +147,138 @@ Public Class Entries
     End Sub
 
     Private Sub ProductsDataGridView_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles ProductsDataGridView.CellDoubleClick
-        If cmbwaiter.Text = "" Then
-            MsgBox("Please enter the name of the waiter serving!")
-        ElseIf cmborder.Text = "" Then
-            MsgBox("You did not specify what type of order this is!")
-        Else
-            ReceiptTextBox.Text = Label2.Text
+        Try
+            ' Validate required fields
+            If String.IsNullOrWhiteSpace(cmbwaiter.Text) Then
+                MessageBox.Show("Please select a waiter.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+            
+            If String.IsNullOrWhiteSpace(cmborder.Text) Then
+                MessageBox.Show("Please select an order type.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+            
+            ' Get product information
+            Dim productCode As String = ProductsDataGridView.CurrentRow.Cells(0).Value.ToString()
+            Dim productDescription As String = ProductsDataGridView.CurrentRow.Cells(1).Value.ToString()
+            Dim productCategory As String = ProductsDataGridView.CurrentRow.Cells(2).Value.ToString()
+            Dim productZWL As Decimal = Convert.ToDecimal(ProductsDataGridView.CurrentRow.Cells(3).Value)
+            Dim productUSD As Decimal = Convert.ToDecimal(ProductsDataGridView.CurrentRow.Cells(4).Value)
+            
+            ' Get quantity
             Dim quantity As Integer
-            BOSS_CAFE.Quantity.ShowDialog()
-            quantity = Val(quantitybx.Text)
-            'quantity = InputBox("Enter quantity", "Quantity Ordered", "1")
-            QuantityTextBox.Text = quantity
-            total = quantity * Int(ProductsDataGridView.CurrentRow.Cells(4).Value)
-            zwdtotal = quantity * Int(ProductsDataGridView.CurrentRow.Cells(3).Value)
-            pcount = pcount + quantity
-            If ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Steak" Then
-                sype = InputBox("Enter:" & vbCrLf & "W for well done" & vbCrLf & "M for Medium" & vbCrLf & "R for Rare" & vbCrLf & "MW for Medium to Well", "Steak Category")
-            ElseIf ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Chicken" Then
-                cype = InputBox("Enter:" & vbCrLf & "L for Lemon & Herb" & vbCrLf & "M for Mild" & vbCrLf & "H for Hot", "Chicken Category")
-            ElseIf ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Breakfasts" Then
-                bype = InputBox("Enter:" & vbCrLf & "S for Scrambled" & vbCrLf & "M for Medium" & vbCrLf & "W for Well", "Breakfast Category")
-            End If
-
-            If cusd = True Then
-                rtfReceipt.AppendText(vbCrLf + ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & vbLf + ProductsDataGridView.CurrentRow.Cells(0).Value.ToString + vbTab & quantity & ".00" & vbTab + ProductsDataGridView.CurrentRow.Cells(4).Value.ToString & ".00" + vbTab & total & ".00")
-                EOD.rtfReceipt.AppendText(vbCrLf + ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & vbLf + ProductsDataGridView.CurrentRow.Cells(0).Value.ToString + vbTab & quantity & vbTab + ProductsDataGridView.CurrentRow.Cells(4).Value.ToString + vbTab & total)
-                If ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Chicken" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Steak" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Breakfasts" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Sandwiches" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Extras" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Salads" Then
-                    rtfReceiptC.AppendText(vbCrLf & quantity & "  " & ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & " " & cype & bype & sype)
+            Using quantityForm As New Quantity()
+                If quantityForm.ShowDialog() = DialogResult.OK Then
+                    quantity = Convert.ToInt32(quantityForm.quantitybx.Text)
                 Else
-                    rtfReceiptB.AppendText(vbCrLf & quantity & "  " & ProductsDataGridView.CurrentRow.Cells(1).Value.ToString)
+                    Return ' User cancelled
                 End If
-                rtotal = rtotal + total
-                PriceTextBox.Text = ProductsDataGridView.CurrentRow.Cells(4).Value
-                TotalTextBox.Text = lblTotal.Text
-                CurrencyTextBox.Text = "USD"
-            Else
-                rtfReceipt.AppendText(vbCrLf + ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & vbLf + ProductsDataGridView.CurrentRow.Cells(0).Value.ToString + vbTab & quantity & ".00" & vbTab + ProductsDataGridView.CurrentRow.Cells(3).Value.ToString & ".00" + vbTab & zwdtotal)
-                EOD.rtfReceipt.AppendText(vbCrLf + ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & vbLf + ProductsDataGridView.CurrentRow.Cells(0).Value.ToString + vbTab & quantity & vbTab + ProductsDataGridView.CurrentRow.Cells(3).Value.ToString + vbTab & zwdtotal)
-                If ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Chicken" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Steak" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Breakfasts" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Sandwiches" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Extras" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Salads" Or ProductsDataGridView.CurrentRow.Cells(2).Value.ToString = "Fish" Then
-                    rtfReceiptC.AppendText(vbCrLf & quantity & "  " & ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & "-" & cype & bype & sype)
-                Else
-                    rtfReceiptB.AppendText(vbCrLf & quantity & "  " & ProductsDataGridView.CurrentRow.Cells(1).Value.ToString)
-                End If
-                rtotal = rtotal + zwdtotal
-                PriceTextBox.Text = ProductsDataGridView.CurrentRow.Cells(3).Value
-                TotalTextBox.Text = lblZTotal.Text
-                CurrencyTextBox.Text = "ZWD"
+            End Using
+            
+            ' Validate quantity
+            If quantity <= 0 Then
+                MessageBox.Show("Quantity must be greater than zero.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
             End If
-            CodeTextBox.Text = ProductsDataGridView.CurrentRow.Cells(0).Value.ToString
-            DateTextBox.Text = DateTimePicker1.Value
+            
+            ' Get special preparation instructions
+            Dim specialInstructions As String = GetSpecialInstructions(productCategory)
+            
+            ' Calculate totals
+            Dim price As Decimal = If(isUSD, productUSD, productZWL)
+            currentItemTotal = quantity * price
+            
+            ' Create sale data
+            Dim saleData As New SaleData With {
+                .Code = productCode,
+                .Description = productDescription & If(String.IsNullOrWhiteSpace(specialInstructions), "", " (" & specialInstructions & ")"),
+                .Quantity = quantity,
+                .Receipt = currentReceiptNumber,
+                .Price = price,
+                .Total = currentItemTotal,
+                .Date = DateTimePicker1.Value,
+                .Waiter = cmbwaiter.Text,
+                .Order = cmborder.Text,
+                .Currency = If(isUSD, "USD", "ZWD")
+            }
+            
+            ' Add to current sale
+            currentSale.Add(saleData)
+            
+            ' Update running totals
+            runningTotal += currentItemTotal
+            productCount += quantity
+            
+            ' Update receipt display
+            UpdateReceiptDisplay(saleData)
+            
+            ' Update totals display
+            UpdateTotalsDisplay()
+            
+            ' Hide product grid
             ProductsDataGridView.SendToBack()
             ProductsDataGridView.Visible = False
             btnClose.SendToBack()
             btnClose.Visible = False
-            cype = ""
-            bype = ""
-            sype = ""
-
-            Try
-                Dim sqlconn As New OleDb.OleDbConnection
-                Dim connstring, command As String
-                connstring = My.Settings.BossConnectionString
-                sqlconn.ConnectionString = connstring
-                sqlconn.Open()
-                command = "INSERT INTO Sales([Code],[Quantity],[Receipt],[Price],[Total],[Date],[Waiter],[Order],[Currency],[Description])VALUES('" & CodeTextBox.Text & "','" & QuantityTextBox.Text & "','" & Label2.Text & "','" & PriceTextBox.Text & "','" & TotalTextBox.Text & "','" & DateTextBox.Text & "','" & cmbwaiter.Text & "','" & cmborder.Text & "','" & CurrencyTextBox.Text & "', '" & ProductsDataGridView.CurrentRow.Cells(1).Value.ToString & "')"
-                Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
-                sql.Parameters.Add(New OleDbParameter("Code", CType(CodeTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Quantity", CType(QuantityTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Receipt", CType(ReceiptTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Price", CType(PriceTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Total", CType(TotalTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Date", CType(DateTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Waiter", CType(WaiterTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Order", CType(OrderTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Currency", CType(CurrencyTextBox.Text, String)))
-                sql.Parameters.Add(New OleDbParameter("Description", CType(ProductsDataGridView.CurrentRow.Cells(1).Value, String)))
-                sql.ExecuteNonQuery()
-            Catch ex As Exception
-                MessageBox.Show(ex.Message, "Sales Record Saving Failed!")
-
-            End Try
+            
+            ' Clear special instruction variables
+            chickenType = ""
+            steakType = ""
+            breakfastType = ""
+            
+        Catch ex As Exception
+            MessageBox.Show($"Error adding product: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+    
+    Private Function GetSpecialInstructions(category As String) As String
+        Select Case category.ToLower()
+            Case "steak"
+                steakType = InputBox("Enter preparation:" & vbCrLf & "W for Well Done" & vbCrLf & "M for Medium" & vbCrLf & "R for Rare" & vbCrLf & "MW for Medium Well", "Steak Preparation")
+                Return steakType
+            Case "chicken"
+                chickenType = InputBox("Enter preparation:" & vbCrLf & "L for Lemon & Herb" & vbCrLf & "M for Mild" & vbCrLf & "H for Hot", "Chicken Preparation")
+                Return chickenType
+            Case "breakfasts"
+                breakfastType = InputBox("Enter preparation:" & vbCrLf & "S for Scrambled" & vbCrLf & "M for Medium" & vbCrLf & "W for Well Done", "Breakfast Preparation")
+                Return breakfastType
+            Case Else
+                Return ""
+        End Select
+    End Function
+    
+    Private Sub UpdateReceiptDisplay(saleData As SaleData)
+        ' Update main receipt
+        rtfReceipt.AppendText(vbCrLf & saleData.Description & vbCrLf)
+        rtfReceipt.AppendText(saleData.Code & vbTab & saleData.Quantity.ToString("F0") & vbTab & saleData.Price.ToString("F2") & vbTab & saleData.Total.ToString("F2"))
+        
+        ' Update kitchen receipt
+        If IsKitchenItem(saleData.Description) Then
+            rtfReceiptC.AppendText(vbCrLf & saleData.Quantity.ToString("F0") & "  " & saleData.Description)
+        Else
+            rtfReceiptB.AppendText(vbCrLf & saleData.Quantity.ToString("F0") & "  " & saleData.Description)
+        End If
+        
+        ' Update EOD receipt
+        EOD.rtfReceipt.AppendText(vbCrLf & saleData.Description & vbCrLf)
+        EOD.rtfReceipt.AppendText(saleData.Code & vbTab & saleData.Quantity.ToString("F0") & vbTab & saleData.Price.ToString("F2") & vbTab & saleData.Total.ToString("F2"))
+    End Sub
+    
+    Private Function IsKitchenItem(description As String) As Boolean
+        Dim kitchenCategories As String() = {"Chicken", "Steak", "Breakfasts", "Sandwiches", "Extras", "Salads", "Fish"}
+        Return kitchenCategories.Any(Function(cat) description.ToLower().Contains(cat.ToLower()))
+    End Function
+    
+    Private Sub UpdateTotalsDisplay()
+        If isUSD Then
+            lblTotal.Text = runningTotal.ToString("F2")
+            lblZTotal.Visible = False
+            lblTotal.Visible = True
+        Else
+            lblZTotal.Text = runningTotal.ToString("F2")
+            lblTotal.Visible = False
+            lblZTotal.Visible = True
         End If
     End Sub
 
@@ -194,105 +288,138 @@ Public Class Entries
     End Sub
 
     Private Sub payment_Click(sender As Object, e As EventArgs) Handles payment.Click
-        rtfReceipt.AppendText(vbCrLf + vbCrLf + "---------------------------------------------------------------------------------------------------------------" + vbTab)
-        rtfReceipt.AppendText(vbCrLf + "Number of items bought:         " & pcount)
-        If cusd = True Then
-            rtfReceipt.AppendText(vbCrLf + "USD Total:                                " & lblTotal.Text.ToString)
-            txtDtotal.Text = Val(txtDtotal.Text) + rtotal
+        Try
+            ' Validate that there are items to process
+            If currentSale.Count = 0 Then
+                MessageBox.Show("No items to process. Please add items to the sale.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+            
+            ' Process each sale item
+            For Each saleItem As SaleData In currentSale
+                Dim result As ProcessingResult = BusinessLogicLayer.ProcessSale(saleItem)
+                If Not result.IsSuccess Then
+                    MessageBox.Show($"Failed to process sale item: {result.Message}", "Processing Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    Return
+                End If
+            Next
+            
+            ' Complete the receipt
+            CompleteReceipt()
+            
+            ' Print receipts
+            PrintReceipts()
+            
+            ' Update daily totals
+            UpdateDailyTotals()
+            
+            ' Reset for next sale
+            ResetForNextSale()
+            
+            MessageBox.Show($"Sales Invoice number {currentReceiptNumber} successfully processed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            
+        Catch ex As BusinessLogicException
+            MessageBox.Show($"Payment processing error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        Catch ex As Exception
+            MessageBox.Show($"Unexpected error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+    
+    Private Sub CompleteReceipt()
+        ' Add totals to receipt
+        rtfReceipt.AppendText(vbCrLf & vbCrLf & "---------------------------------------------------------------------------------------------------------------")
+        rtfReceipt.AppendText(vbCrLf & "Number of items: " & productCount.ToString())
+        
+        If isUSD Then
+            rtfReceipt.AppendText(vbCrLf & "USD Total: " & runningTotal.ToString("F2"))
         Else
-            rtfReceipt.AppendText(vbCrLf + "ZWD Total:                                " & lblZTotal.Text.ToString)
-            txtDZTotal.Text = Val(txtDZTotal.Text) + rtotal
+            rtfReceipt.AppendText(vbCrLf & "ZWD Total: " & runningTotal.ToString("F2"))
         End If
-        rtfReceipt.AppendText(vbCrLf + vbCrLf + "...                ...                          " & cmbwaiter.Text)
-        rtfReceiptC.AppendText(vbCrLf + vbCrLf + "-" + vbTab)
-        rtfReceiptB.AppendText(vbCrLf + vbCrLf + "-" + vbTab)
-
-        EOD.rtfReceipt.AppendText(vbCrLf + vbCrLf + "Number of items bought:         " & pcount)
-        If cusd = True Then
-            EOD.rtfReceipt.AppendText(vbCrLf + "Total:                                " & lblTotal.Text.ToString)
-        Else
-            EOD.rtfReceipt.AppendText(vbCrLf + "Total:                                " & lblZTotal.Text.ToString)
-        End If
-        EOD.rtfReceipt.AppendText(vbCrLf + "---------------------------------------------------------------------------------------------------------------" + vbTab)
-
-        PrintDocument3.Print()
-        PrintDocument2.Print()
-        PrintDocument1.Print()
-        PrintDocument1.Print()
-
-        Me.Validate()
-        Me.TotalsBindingSource.EndEdit()
-        Me.TableAdapterManager.UpdateAll(Me.BossDataSet)
+        
+        rtfReceipt.AppendText(vbCrLf & vbCrLf & "Waiter: " & cmbwaiter.Text)
+        
+        ' Update kitchen and beverage receipts
+        rtfReceiptC.AppendText(vbCrLf & vbCrLf & "---")
+        rtfReceiptB.AppendText(vbCrLf & vbCrLf & "---")
+        
+        ' Update EOD receipt
+        EOD.rtfReceipt.AppendText(vbCrLf & vbCrLf & "Number of items: " & productCount.ToString())
+        EOD.rtfReceipt.AppendText(vbCrLf & "Total: " & runningTotal.ToString("F2"))
+        EOD.rtfReceipt.AppendText(vbCrLf & "---------------------------------------------------------------------------------------------------------------")
+    End Sub
+    
+    Private Sub PrintReceipts()
         Try
-            Dim sqlconn As New OleDb.OleDbConnection
-            Dim connstring, command As String
-            connstring = My.Settings.BossConnectionString
-            sqlconn.ConnectionString = connstring
-            sqlconn.Open()
-            command = "INSERT INTO Totals([Receipt],[Total])VALUES('" & Label2.Text & "','" & lblTotal.Text & "')"
-            Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
-            sql.Parameters.Add(New OleDbParameter("Receipt", CType(Label2.Text, String)))
-            sql.Parameters.Add(New OleDbParameter("Total", CType(lblTotal.Text, String)))
-            sql.ExecuteNonQuery()
-            MsgBox("Sales Invoice number " & Label2.Text & " successfully saved!")
+            ' Print all receipt types
+            PrintDocument3.Print() ' Kitchen receipt
+            PrintDocument2.Print() ' Beverage receipt
+            PrintDocument1.Print() ' Customer receipt
+            PrintDocument1.Print() ' Duplicate for records
         Catch ex As Exception
-            MessageBox.Show(ex.Message, "Receipt Total Not Saved!")
-
+            MessageBox.Show($"Printing error: {ex.Message}", "Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
         End Try
+    End Sub
+    
+    Private Sub UpdateDailyTotals()
         Try
-            Dim sqlconn As New OleDb.OleDbConnection
-            Dim connstring, command As String
-            connstring = My.Settings.BossConnectionString
-            sqlconn.ConnectionString = connstring
-            sqlconn.Open()
-            command = "INSERT INTO Waiters([Receipt],[Waiter])VALUES('" & Label2.Text & "','" & cmbwaiter.Text & "')"
-            Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
-            sql.Parameters.Add(New OleDbParameter("Receipt", CType(Label2.Text, String)))
-            sql.Parameters.Add(New OleDbParameter("Waiter", CType(WaiterTextBox.Text, String)))
-            sql.ExecuteNonQuery()
-        Catch ex As Exception
-            MessageBox.Show(ex.Message, "Waiter Not Saved!")
+            ' Update daily totals
+            If isUSD Then
+                dailyTotals.UTotal += runningTotal
+            Else
+                dailyTotals.ZTotal += runningTotal
+            End If
+            
+            dailyTotals.ReceiptCount = Convert.ToInt32(currentReceiptNumber)
+            BusinessLogicLayer.UpdateDailyTotals(dailyTotals)
+            
+            ' Update display
+            txtDtotal.Text = dailyTotals.UTotal.ToString("F2")
+            txtDZTotal.Text = dailyTotals.ZTotal.ToString("F2")
+            
+        Catch ex As BusinessLogicException
+            MessageBox.Show($"Failed to update daily totals: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
-        Me.Validate()
-        Me.DTotalsBindingSource.EndEdit()
-        Me.TableAdapterManager.UpdateAll(Me.BossDataSet)
-        Try
-            Dim sqlconn As New OleDb.OleDbConnection
-            Dim connstring, command As String
-            connstring = My.Settings.BossConnectionString
-            sqlconn.ConnectionString = connstring
-            sqlconn.Open()
-            command = "UPDATE DTotals SET ZTotal = '" & txtDZTotal.Text & "', UTotal = '" & txtDtotal.Text & "', NoR = '" & Label2.Text & "', TDate = '" & Today & "' WHERE TDate = '" & Today & "'"
-            Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
-            sql.Parameters.Add(New OleDbParameter("TDate", Today))
-            sql.Parameters.Add(New OleDbParameter("ZTotal", CType(txtDZTotal.Text, String)))
-            sql.Parameters.Add(New OleDbParameter("NoR", CType(Label2.Text, String)))
-            sql.Parameters.Add(New OleDbParameter("UTotal", CType(txtDtotal.Text, String)))
-            sql.ExecuteNonQuery()
-        Catch ex As Exception
-            MessageBox.Show(ex.Message, "Failed to update daily total!")
-
-        End Try
-
-        Label2.Text = "0" & Val(Label2.Text) + 1
-        lblTotal.Text = "00.00"
-        lblZTotal.Text = "00.00"
-
-        rtfReceipt.Text = "BOSS CAFE " & vbCrLf & "60 BEDFORD ROAD" & vbCrLf & "AVONDALE" & vbCrLf & "HARARE" & vbCrLf & vbCrLf & "Tel: 0773277464" & vbCrLf & "VAT NO: ---------" & vbCrLf & "---------------------------------------------------------------------------------------------------------------"
-        rtfReceipt.AppendText(vbCrLf + "Number     :                       " & "00" + Label2.Text)
-        rtfReceipt.AppendText(vbCrLf + "Date:" & DateTimePicker1.Value.ToLongDateString)
+    End Sub
+    
+    Private Sub ResetForNextSale()
+        ' Generate new receipt number
+        currentReceiptNumber = BusinessLogicLayer.GenerateReceiptNumber(DateTime.Today)
+        Label2.Text = currentReceiptNumber.PadLeft(3, "0"c)
+        
+        ' Reset totals
+        runningTotal = 0
+        productCount = 0
+        currentSale.Clear()
+        
+        ' Reset displays
+        lblTotal.Text = "0.00"
+        lblZTotal.Text = "0.00"
+        
+        ' Reset receipt displays
+        InitializeReceiptDisplay()
         rtfReceiptB.Text = "BEVERAGES"
         rtfReceiptC.Text = "KITCHEN"
+        
+        ' Reset form controls
         cmborder.ResetText()
         cmbwaiter.ResetText()
-        pcount = 0
-        total = 0
-        zwdtotal = 0
+        
+        ' Reset currency to USD
+        isUSD = True
+        UpdateCurrencyDisplay()
+        
+        ' Start timer for next sale
         Timer2.Start()
-        cusd = True
-        rtotal = 0
-        lblZTotal.Visible = False
-        lblTotal.Visible = True
+    End Sub
+    
+    Private Sub UpdateCurrencyDisplay()
+        If isUSD Then
+            lblTotal.Visible = True
+            lblZTotal.Visible = False
+        Else
+            lblTotal.Visible = False
+            lblZTotal.Visible = True
+        End If
     End Sub
 
     Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
@@ -304,17 +431,67 @@ Public Class Entries
     End Sub
 
     Private Sub zwd_Click(sender As Object, e As EventArgs) Handles zwd.Click
-        MsgBox("This will now convert the prices on the current invoice to Zimbabwean Dollar!", MsgBoxStyle.Information, "Price Conversion")
-        cusd = False
-        lblTotal.Visible = False
-        lblZTotal.Visible = True
+        Try
+            If currentSale.Count > 0 Then
+                Dim result As DialogResult = MessageBox.Show("Switching currency will recalculate all items in the current sale. Continue?", 
+                                                           "Currency Conversion", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                If result = DialogResult.No Then
+                    Return
+                End If
+            End If
+            
+            isUSD = False
+            UpdateCurrencyDisplay()
+            RecalculateCurrentSale()
+            
+            MessageBox.Show("Currency switched to Zimbabwean Dollar (ZWD). All prices have been converted.", 
+                          "Currency Conversion", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Exception
+            MessageBox.Show($"Error switching currency: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
 
     Private Sub swipe_Click(sender As Object, e As EventArgs) Handles swipe.Click
-        MsgBox("This will now convert the prices on the current invoice to Zimbabwean Dollar!", MsgBoxStyle.Information, "Price Conversion")
-        cusd = False
-        lblTotal.Visible = False
-        lblZTotal.Visible = True
+        Try
+            If currentSale.Count > 0 Then
+                Dim result As DialogResult = MessageBox.Show("Switching currency will recalculate all items in the current sale. Continue?", 
+                                                           "Currency Conversion", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                If result = DialogResult.No Then
+                    Return
+                End If
+            End If
+            
+            isUSD = False
+            UpdateCurrencyDisplay()
+            RecalculateCurrentSale()
+            
+            MessageBox.Show("Currency switched to Zimbabwean Dollar (ZWD). All prices have been converted.", 
+                          "Currency Conversion", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Exception
+            MessageBox.Show($"Error switching currency: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+    
+    Private Sub RecalculateCurrentSale()
+        If currentSale.Count = 0 Then Return
+        
+        runningTotal = 0
+        
+        For Each saleItem As SaleData In currentSale
+            ' Get the product from database to get both USD and ZWD prices
+            Dim products = BusinessLogicLayer.GetProductsByCategory("") ' Get all products
+            Dim product = products.FirstOrDefault(Function(p) p.Code = saleItem.Code)
+            
+            If product IsNot Nothing Then
+                saleItem.Price = If(isUSD, product.USD, product.ZWL)
+                saleItem.Total = saleItem.Quantity * saleItem.Price
+                saleItem.Currency = If(isUSD, "USD", "ZWD")
+            End If
+            
+            runningTotal += saleItem.Total
+        Next
+        
+        UpdateTotalsDisplay()
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click

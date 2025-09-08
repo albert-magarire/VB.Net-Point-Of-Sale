@@ -1,0 +1,16 @@
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.vbproj.AssemblyReference.cache
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.CashUp.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.CashUpDate.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Entries.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.EOD.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Flash.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.LoggedIn.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Login.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Menu.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.products.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Quantity.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Reports.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Supervisor.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Users.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.waiters.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.vbproj.GenerateResource.cache

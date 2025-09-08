@@ -11,7 +11,7 @@
     <AssemblyName>BOSS CAFE</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>WindowsForms</MyType>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>Set-Up\</PublishUrl>
     <Install>true</Install>
@@ -60,7 +60,7 @@
     <OptionCompare>Binary</OptionCompare>
   </PropertyGroup>
   <PropertyGroup>
-    <OptionStrict>Off</OptionStrict>
+    <OptionStrict>On</OptionStrict>
   </PropertyGroup>
   <PropertyGroup>
     <OptionInfer>On</OptionInfer>
@@ -113,6 +113,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>BossDataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="BusinessLogicLayer.vb" />
+    <Compile Include="DataAccessLayer.vb" />
+    <Compile Include="ValidationHelper.vb" />
     <Compile Include="CashUp.Designer.vb">
       <DependentUpon>CashUp.vb</DependentUpon>
     </Compile>
