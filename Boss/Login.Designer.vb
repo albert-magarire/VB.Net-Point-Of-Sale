@@ -25,7 +25,7 @@ Partial Class Login
     'Required by the Windows Form Designer
     Private components As System.ComponentModel.IContainer
 
-    'NOTE: The following procedure is required by the Windows Form Designer
+    'NOTE: The following procedure is required by the Windows Form Designer, might need to be updated though
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
@@ -177,3 +177,4 @@ Partial Class Login
     Friend WithEvents cmbUser As System.Windows.Forms.ComboBox
 
 End Class
+
