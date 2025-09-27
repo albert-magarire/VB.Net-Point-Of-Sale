@@ -124,8 +124,8 @@ Public Class ValidationHelper
             Return New ValidationResult(False, "Password is required.")
         End If
         
-        If password.Length < 6 Then
-            Return New ValidationResult(False, "Password must be at least 6 characters long.")
+        If password.Length < 2 Then
+            Return New ValidationResult(False, "Password must be at least 2 characters long.")
         End If
         
         If password.Length > 50 Then

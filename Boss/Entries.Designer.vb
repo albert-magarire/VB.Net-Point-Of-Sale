@@ -96,6 +96,11 @@ Partial Class Entries
         Me.DataGridViewTextBoxColumn3 = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.DataGridViewTextBoxColumn4 = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.DataGridViewTextBoxColumn5 = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.pnlProductCards = New System.Windows.Forms.Panel()
+        Me.txtQuantity = New System.Windows.Forms.TextBox()
+        Me.lblQuantity = New System.Windows.Forms.Label()
+        Me.btnAddToReceipt = New System.Windows.Forms.Button()
+        Me.lblSelectedProduct = New System.Windows.Forms.Label()
         Me.PrintDocument1 = New System.Drawing.Printing.PrintDocument()
         Me.PrintDocument2 = New System.Drawing.Printing.PrintDocument()
         Me.PrintDocument3 = New System.Drawing.Printing.PrintDocument()
@@ -228,7 +233,7 @@ Partial Class Entries
         '
         'Panel1
         '
-        Me.Panel1.BackColor = System.Drawing.Color.Navy
+        Me.Panel1.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
         Me.Panel1.Controls.Add(Me.lblZTotal)
         Me.Panel1.Controls.Add(Me.lblTotal)
         Me.Panel1.Controls.Add(Me.payment)
@@ -240,19 +245,20 @@ Partial Class Entries
         Me.Panel1.Controls.Add(Me.Label2)
         Me.Panel1.Controls.Add(Me.quantitybx)
         Me.Panel1.ForeColor = System.Drawing.Color.White
-        Me.Panel1.Location = New System.Drawing.Point(0, 1)
+        Me.Panel1.Location = New System.Drawing.Point(0, 0)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(1021, 130)
+        Me.Panel1.Size = New System.Drawing.Size(1024, 140)
         Me.Panel1.TabIndex = 0
         '
         'lblZTotal
         '
         Me.lblZTotal.AutoSize = True
         Me.lblZTotal.BackColor = System.Drawing.Color.Transparent
-        Me.lblZTotal.Font = New System.Drawing.Font("Agency FB", 30.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblZTotal.Location = New System.Drawing.Point(902, 38)
+        Me.lblZTotal.Font = New System.Drawing.Font("Segoe UI", 28.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblZTotal.ForeColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.lblZTotal.Location = New System.Drawing.Point(900, 45)
         Me.lblZTotal.Name = "lblZTotal"
-        Me.lblZTotal.Size = New System.Drawing.Size(111, 50)
+        Me.lblZTotal.Size = New System.Drawing.Size(120, 51)
         Me.lblZTotal.TabIndex = 62
         Me.lblZTotal.Text = "00.00"
         Me.lblZTotal.Visible = False
@@ -261,61 +267,73 @@ Partial Class Entries
         '
         Me.lblTotal.AutoSize = True
         Me.lblTotal.BackColor = System.Drawing.Color.Transparent
-        Me.lblTotal.Font = New System.Drawing.Font("Agency FB", 30.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTotal.Location = New System.Drawing.Point(904, 38)
+        Me.lblTotal.Font = New System.Drawing.Font("Segoe UI", 28.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblTotal.ForeColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.lblTotal.Location = New System.Drawing.Point(900, 45)
         Me.lblTotal.Name = "lblTotal"
-        Me.lblTotal.Size = New System.Drawing.Size(111, 50)
+        Me.lblTotal.Size = New System.Drawing.Size(120, 51)
         Me.lblTotal.TabIndex = 60
         Me.lblTotal.Text = "00.00"
         '
         'payment
         '
-        Me.payment.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.payment.ForeColor = System.Drawing.Color.Black
-        Me.payment.Location = New System.Drawing.Point(892, 91)
+        Me.payment.BackColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.payment.FlatAppearance.BorderSize = 0
+        Me.payment.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.payment.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.payment.ForeColor = System.Drawing.Color.White
+        Me.payment.Location = New System.Drawing.Point(890, 95)
         Me.payment.Name = "payment"
-        Me.payment.Size = New System.Drawing.Size(121, 32)
+        Me.payment.Size = New System.Drawing.Size(130, 40)
         Me.payment.TabIndex = 61
         Me.payment.Text = "PAYMENT"
-        Me.payment.UseVisualStyleBackColor = True
+        Me.payment.UseVisualStyleBackColor = False
         '
         'cmborder
         '
-        Me.cmborder.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.cmborder.BackColor = System.Drawing.Color.White
+        Me.cmborder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmborder.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.cmborder.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.cmborder.FormattingEnabled = True
-        Me.cmborder.Items.AddRange(New Object() {"Take-Away", "Sit-In"})
-        Me.cmborder.Location = New System.Drawing.Point(569, 60)
+        Me.cmborder.Items.AddRange(New Object() {"Dine In", "Take Away", "Delivery"})
+        Me.cmborder.Location = New System.Drawing.Point(570, 70)
         Me.cmborder.Name = "cmborder"
-        Me.cmborder.Size = New System.Drawing.Size(225, 28)
+        Me.cmborder.Size = New System.Drawing.Size(200, 29)
         Me.cmborder.TabIndex = 49
         '
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label4.Location = New System.Drawing.Point(566, 40)
+        Me.Label4.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label4.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        Me.Label4.Location = New System.Drawing.Point(570, 50)
         Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(96, 17)
+        Me.Label4.Size = New System.Drawing.Size(90, 20)
         Me.Label4.TabIndex = 48
         Me.Label4.Text = "Order Type:"
         '
         'cmbwaiter
         '
-        Me.cmbwaiter.Font = New System.Drawing.Font("Microsoft Sans Serif", 13.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.cmbwaiter.BackColor = System.Drawing.Color.White
+        Me.cmbwaiter.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbwaiter.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.cmbwaiter.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.cmbwaiter.FormattingEnabled = True
-        Me.cmbwaiter.Items.AddRange(New Object() {"Ashely", "Biank", "Lionnel", "Nancy", "Panashe", "Phillip", "Tinotenda"})
-        Me.cmbwaiter.Location = New System.Drawing.Point(242, 60)
+        Me.cmbwaiter.Items.AddRange(New Object() {"Mary", "John", "Peter", "Sarah", "Mike", "Lisa", "David"})
+        Me.cmbwaiter.Location = New System.Drawing.Point(250, 70)
         Me.cmbwaiter.Name = "cmbwaiter"
-        Me.cmbwaiter.Size = New System.Drawing.Size(248, 28)
+        Me.cmbwaiter.Size = New System.Drawing.Size(200, 29)
         Me.cmbwaiter.TabIndex = 47
         '
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label3.Location = New System.Drawing.Point(242, 40)
+        Me.Label3.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        Me.Label3.Location = New System.Drawing.Point(250, 50)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(60, 17)
+        Me.Label3.Size = New System.Drawing.Size(58, 20)
         Me.Label3.TabIndex = 46
         Me.Label3.Text = "Waiter:"
         '
@@ -337,15 +355,15 @@ Partial Class Entries
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.BackColor = System.Drawing.Color.MidnightBlue
-        Me.Label2.Font = New System.Drawing.Font("Agency FB", 60.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label2.ForeColor = System.Drawing.SystemColors.ButtonHighlight
-        Me.Label2.Location = New System.Drawing.Point(3, 29)
+        Me.Label2.BackColor = System.Drawing.Color.Transparent
+        Me.Label2.Font = New System.Drawing.Font("Segoe UI", 48.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label2.ForeColor = System.Drawing.Color.White
+        Me.Label2.Location = New System.Drawing.Point(20, 35)
         Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(99, 97)
+        Me.Label2.Size = New System.Drawing.Size(100, 86)
         Me.Label2.TabIndex = 44
-        Me.Label2.Text = "01"
-        Me.Label2.TextAlign = System.Drawing.ContentAlignment.BottomLeft
+        Me.Label2.Text = "001"
+        Me.Label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'quantitybx
         '
@@ -357,130 +375,213 @@ Partial Class Entries
         '
         'Button17
         '
-        Me.Button17.Location = New System.Drawing.Point(442, 453)
+        Me.Button17.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button17.FlatAppearance.BorderSize = 0
+        Me.Button17.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button17.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button17.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button17.ForeColor = System.Drawing.Color.White
+        Me.Button17.Location = New System.Drawing.Point(480, 480)
         Me.Button17.Name = "Button17"
-        Me.Button17.Size = New System.Drawing.Size(173, 67)
+        Me.Button17.Size = New System.Drawing.Size(160, 70)
         Me.Button17.TabIndex = 138
         Me.Button17.Text = "FRUIT JUICE"
-        Me.Button17.UseVisualStyleBackColor = True
+        Me.Button17.UseVisualStyleBackColor = False
         '
         'Button16
         '
-        Me.Button16.Location = New System.Drawing.Point(291, 453)
+        Me.Button16.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button16.FlatAppearance.BorderSize = 0
+        Me.Button16.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button16.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button16.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button16.ForeColor = System.Drawing.Color.White
+        Me.Button16.Location = New System.Drawing.Point(310, 480)
         Me.Button16.Name = "Button16"
-        Me.Button16.Size = New System.Drawing.Size(145, 67)
+        Me.Button16.Size = New System.Drawing.Size(160, 70)
         Me.Button16.TabIndex = 136
         Me.Button16.Text = "COOLERS"
-        Me.Button16.UseVisualStyleBackColor = True
+        Me.Button16.UseVisualStyleBackColor = False
         '
         'Button15
         '
-        Me.Button15.Location = New System.Drawing.Point(132, 453)
+        Me.Button15.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button15.FlatAppearance.BorderSize = 0
+        Me.Button15.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button15.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button15.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button15.ForeColor = System.Drawing.Color.White
+        Me.Button15.Location = New System.Drawing.Point(140, 480)
         Me.Button15.Name = "Button15"
-        Me.Button15.Size = New System.Drawing.Size(153, 67)
+        Me.Button15.Size = New System.Drawing.Size(160, 70)
         Me.Button15.TabIndex = 135
         Me.Button15.Text = "MOCKTAILS"
-        Me.Button15.UseVisualStyleBackColor = True
+        Me.Button15.UseVisualStyleBackColor = False
         '
         'Button14
         '
-        Me.Button14.Location = New System.Drawing.Point(442, 371)
+        Me.Button14.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button14.FlatAppearance.BorderSize = 0
+        Me.Button14.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button14.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button14.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button14.ForeColor = System.Drawing.Color.White
+        Me.Button14.Location = New System.Drawing.Point(480, 400)
         Me.Button14.Name = "Button14"
-        Me.Button14.Size = New System.Drawing.Size(173, 72)
+        Me.Button14.Size = New System.Drawing.Size(160, 70)
         Me.Button14.TabIndex = 134
         Me.Button14.Text = "FRAPPES"
-        Me.Button14.UseVisualStyleBackColor = True
+        Me.Button14.UseVisualStyleBackColor = False
         '
         'Button13
         '
-        Me.Button13.Location = New System.Drawing.Point(291, 371)
+        Me.Button13.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button13.FlatAppearance.BorderSize = 0
+        Me.Button13.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button13.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button13.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button13.ForeColor = System.Drawing.Color.White
+        Me.Button13.Location = New System.Drawing.Point(310, 400)
         Me.Button13.Name = "Button13"
-        Me.Button13.Size = New System.Drawing.Size(145, 72)
+        Me.Button13.Size = New System.Drawing.Size(160, 70)
         Me.Button13.TabIndex = 133
         Me.Button13.Text = "SMOOTHIES FREZZOS"
-        Me.Button13.UseVisualStyleBackColor = True
+        Me.Button13.UseVisualStyleBackColor = False
         '
         'Button12
         '
-        Me.Button12.Location = New System.Drawing.Point(132, 371)
+        Me.Button12.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button12.FlatAppearance.BorderSize = 0
+        Me.Button12.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button12.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button12.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button12.ForeColor = System.Drawing.Color.White
+        Me.Button12.Location = New System.Drawing.Point(140, 400)
         Me.Button12.Name = "Button12"
-        Me.Button12.Size = New System.Drawing.Size(153, 72)
+        Me.Button12.Size = New System.Drawing.Size(160, 70)
         Me.Button12.TabIndex = 132
         Me.Button12.Text = "MILKSHAKES"
-        Me.Button12.UseVisualStyleBackColor = True
+        Me.Button12.UseVisualStyleBackColor = False
         '
         'Button11
         '
-        Me.Button11.Location = New System.Drawing.Point(291, 293)
+        Me.Button11.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button11.FlatAppearance.BorderSize = 0
+        Me.Button11.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button11.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button11.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button11.ForeColor = System.Drawing.Color.White
+        Me.Button11.Location = New System.Drawing.Point(310, 320)
         Me.Button11.Name = "Button11"
-        Me.Button11.Size = New System.Drawing.Size(145, 72)
+        Me.Button11.Size = New System.Drawing.Size(160, 70)
         Me.Button11.TabIndex = 131
         Me.Button11.Text = "HOT BEVERAGES"
-        Me.Button11.UseVisualStyleBackColor = True
+        Me.Button11.UseVisualStyleBackColor = False
         '
         'Button10
         '
-        Me.Button10.Location = New System.Drawing.Point(442, 293)
+        Me.Button10.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button10.FlatAppearance.BorderSize = 0
+        Me.Button10.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button10.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button10.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button10.ForeColor = System.Drawing.Color.White
+        Me.Button10.Location = New System.Drawing.Point(480, 320)
         Me.Button10.Name = "Button10"
-        Me.Button10.Size = New System.Drawing.Size(173, 72)
+        Me.Button10.Size = New System.Drawing.Size(160, 70)
         Me.Button10.TabIndex = 130
         Me.Button10.Text = "SALADS"
-        Me.Button10.UseVisualStyleBackColor = True
+        Me.Button10.UseVisualStyleBackColor = False
         '
         'Button9
         '
-        Me.Button9.Location = New System.Drawing.Point(132, 293)
+        Me.Button9.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button9.FlatAppearance.BorderSize = 0
+        Me.Button9.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button9.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button9.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button9.ForeColor = System.Drawing.Color.White
+        Me.Button9.Location = New System.Drawing.Point(140, 320)
         Me.Button9.Name = "Button9"
-        Me.Button9.Size = New System.Drawing.Size(153, 72)
+        Me.Button9.Size = New System.Drawing.Size(160, 70)
         Me.Button9.TabIndex = 129
         Me.Button9.Text = "EXTRAS"
-        Me.Button9.UseVisualStyleBackColor = True
+        Me.Button9.UseVisualStyleBackColor = False
         '
         'Button8
         '
-        Me.Button8.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Button8.Location = New System.Drawing.Point(442, 218)
+        Me.Button8.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button8.FlatAppearance.BorderSize = 0
+        Me.Button8.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button8.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button8.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button8.ForeColor = System.Drawing.Color.White
+        Me.Button8.Location = New System.Drawing.Point(480, 240)
         Me.Button8.Name = "Button8"
-        Me.Button8.Size = New System.Drawing.Size(173, 69)
+        Me.Button8.Size = New System.Drawing.Size(160, 70)
         Me.Button8.TabIndex = 128
         Me.Button8.Text = "CAKES"
-        Me.Button8.UseVisualStyleBackColor = True
+        Me.Button8.UseVisualStyleBackColor = False
         '
         'Button7
         '
-        Me.Button7.Location = New System.Drawing.Point(291, 218)
+        Me.Button7.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button7.FlatAppearance.BorderSize = 0
+        Me.Button7.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button7.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button7.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button7.ForeColor = System.Drawing.Color.White
+        Me.Button7.Location = New System.Drawing.Point(310, 240)
         Me.Button7.Name = "Button7"
-        Me.Button7.Size = New System.Drawing.Size(145, 69)
+        Me.Button7.Size = New System.Drawing.Size(160, 70)
         Me.Button7.TabIndex = 127
         Me.Button7.Text = "SANDWICHES"
-        Me.Button7.UseVisualStyleBackColor = True
+        Me.Button7.UseVisualStyleBackColor = False
         '
         'Button6
         '
-        Me.Button6.Location = New System.Drawing.Point(132, 218)
+        Me.Button6.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button6.FlatAppearance.BorderSize = 0
+        Me.Button6.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button6.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button6.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button6.ForeColor = System.Drawing.Color.White
+        Me.Button6.Location = New System.Drawing.Point(140, 240)
         Me.Button6.Name = "Button6"
-        Me.Button6.Size = New System.Drawing.Size(153, 69)
+        Me.Button6.Size = New System.Drawing.Size(160, 70)
         Me.Button6.TabIndex = 126
         Me.Button6.Text = "BREAKFASTS"
-        Me.Button6.UseVisualStyleBackColor = True
+        Me.Button6.UseVisualStyleBackColor = False
         '
         'Button5
         '
-        Me.Button5.Location = New System.Drawing.Point(442, 149)
+        Me.Button5.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button5.FlatAppearance.BorderSize = 0
+        Me.Button5.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button5.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button5.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button5.ForeColor = System.Drawing.Color.White
+        Me.Button5.Location = New System.Drawing.Point(450, 160)
         Me.Button5.Name = "Button5"
-        Me.Button5.Size = New System.Drawing.Size(173, 63)
+        Me.Button5.Size = New System.Drawing.Size(180, 70)
         Me.Button5.TabIndex = 125
         Me.Button5.Text = "STEAK BOSS"
-        Me.Button5.UseVisualStyleBackColor = True
+        Me.Button5.UseVisualStyleBackColor = False
         '
         'Button4
         '
-        Me.Button4.Location = New System.Drawing.Point(132, 149)
+        Me.Button4.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.Button4.FlatAppearance.BorderSize = 0
+        Me.Button4.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.Button4.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button4.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button4.ForeColor = System.Drawing.Color.White
+        Me.Button4.Location = New System.Drawing.Point(140, 160)
         Me.Button4.Name = "Button4"
-        Me.Button4.Size = New System.Drawing.Size(153, 63)
+        Me.Button4.Size = New System.Drawing.Size(160, 70)
         Me.Button4.TabIndex = 124
         Me.Button4.Text = "CHICKEN BOSS"
-        Me.Button4.UseVisualStyleBackColor = True
+        Me.Button4.UseVisualStyleBackColor = False
         '
         'cmbCategory
         '
@@ -496,27 +597,36 @@ Partial Class Entries
         '
         'rtfReceipt
         '
+        Me.rtfReceipt.BackColor = System.Drawing.Color.White
+        Me.rtfReceipt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.rtfReceipt.Enabled = False
-        Me.rtfReceipt.Location = New System.Drawing.Point(643, 178)
+        Me.rtfReceipt.Font = New System.Drawing.Font("Consolas", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.rtfReceipt.Location = New System.Drawing.Point(650, 150)
         Me.rtfReceipt.Name = "rtfReceipt"
-        Me.rtfReceipt.Size = New System.Drawing.Size(357, 443)
+        Me.rtfReceipt.Size = New System.Drawing.Size(360, 450)
         Me.rtfReceipt.TabIndex = 119
         Me.rtfReceipt.Text = "BOSS CAFE" & Global.Microsoft.VisualBasic.ChrW(10) & "60 BEDFORD ROAD" & Global.Microsoft.VisualBasic.ChrW(10) & "AVONDALE" & Global.Microsoft.VisualBasic.ChrW(10) & "HARARE" & Global.Microsoft.VisualBasic.ChrW(10) & Global.Microsoft.VisualBasic.ChrW(10) & "Tel: 0773277464" & Global.Microsoft.VisualBasic.ChrW(10) & "VAT NO: ---------" & Global.Microsoft.VisualBasic.ChrW(10) & Global.Microsoft.VisualBasic.ChrW(10) & "---" & _
-    "--------------------------------------------------------------------------------" & _
+    "---------------------------" & _
     "----------------------------"
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(913, 136)
+        Me.btnReset.BackColor = System.Drawing.Color.FromArgb(CType(CType(149, Byte), Integer), CType(CType(165, Byte), Integer), CType(CType(166, Byte), Integer))
+        Me.btnReset.FlatAppearance.BorderSize = 0
+        Me.btnReset.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(127, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(141, Byte), Integer))
+        Me.btnReset.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnReset.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnReset.ForeColor = System.Drawing.Color.White
+        Me.btnReset.Location = New System.Drawing.Point(890, 105)
         Me.btnReset.Name = "btnReset"
-        Me.btnReset.Size = New System.Drawing.Size(103, 34)
+        Me.btnReset.Size = New System.Drawing.Size(120, 35)
         Me.btnReset.TabIndex = 117
         Me.btnReset.Text = "Reset Receipt"
-        Me.btnReset.UseVisualStyleBackColor = True
+        Me.btnReset.UseVisualStyleBackColor = False
         '
         'Panel2
         '
-        Me.Panel2.BackColor = System.Drawing.Color.DarkCyan
+        Me.Panel2.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
         Me.Panel2.Controls.Add(Me.txtDZTotal)
         Me.Panel2.Controls.Add(Me.txtDtotal)
         Me.Panel2.Controls.Add(Me.Button24)
@@ -525,9 +635,9 @@ Partial Class Entries
         Me.Panel2.Controls.Add(Me.Button27)
         Me.Panel2.Controls.Add(Me.Button28)
         Me.Panel2.Controls.Add(Me.btnLog)
-        Me.Panel2.Location = New System.Drawing.Point(1, 629)
+        Me.Panel2.Location = New System.Drawing.Point(0, 610)
         Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(1020, 94)
+        Me.Panel2.Size = New System.Drawing.Size(1024, 110)
         Me.Panel2.TabIndex = 113
         '
         'txtDZTotal
@@ -552,86 +662,138 @@ Partial Class Entries
         '
         'Button24
         '
-        Me.Button24.Location = New System.Drawing.Point(20, 22)
+        Me.Button24.BackColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.Button24.FlatAppearance.BorderSize = 0
+        Me.Button24.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(39, Byte), Integer), CType(CType(174, Byte), Integer), CType(CType(96, Byte), Integer))
+        Me.Button24.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button24.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button24.ForeColor = System.Drawing.Color.White
+        Me.Button24.Location = New System.Drawing.Point(20, 30)
         Me.Button24.Name = "Button24"
-        Me.Button24.Size = New System.Drawing.Size(88, 49)
+        Me.Button24.Size = New System.Drawing.Size(100, 50)
         Me.Button24.TabIndex = 30
         Me.Button24.Text = "New"
-        Me.Button24.UseVisualStyleBackColor = True
+        Me.Button24.UseVisualStyleBackColor = False
         '
         'Button25
         '
-        Me.Button25.Location = New System.Drawing.Point(114, 22)
+        Me.Button25.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(152, Byte), Integer), CType(CType(219, Byte), Integer))
+        Me.Button25.FlatAppearance.BorderSize = 0
+        Me.Button25.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(41, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.Button25.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button25.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button25.ForeColor = System.Drawing.Color.White
+        Me.Button25.Location = New System.Drawing.Point(130, 30)
         Me.Button25.Name = "Button25"
-        Me.Button25.Size = New System.Drawing.Size(88, 49)
+        Me.Button25.Size = New System.Drawing.Size(100, 50)
         Me.Button25.TabIndex = 31
         Me.Button25.Text = "Sales Person"
-        Me.Button25.UseVisualStyleBackColor = True
+        Me.Button25.UseVisualStyleBackColor = False
         '
         'Button26
         '
-        Me.Button26.Location = New System.Drawing.Point(208, 22)
+        Me.Button26.BackColor = System.Drawing.Color.FromArgb(CType(CType(155, Byte), Integer), CType(CType(89, Byte), Integer), CType(CType(182, Byte), Integer))
+        Me.Button26.FlatAppearance.BorderSize = 0
+        Me.Button26.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(142, Byte), Integer), CType(CType(68, Byte), Integer), CType(CType(173, Byte), Integer))
+        Me.Button26.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button26.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button26.ForeColor = System.Drawing.Color.White
+        Me.Button26.Location = New System.Drawing.Point(240, 30)
         Me.Button26.Name = "Button26"
-        Me.Button26.Size = New System.Drawing.Size(88, 49)
+        Me.Button26.Size = New System.Drawing.Size(100, 50)
         Me.Button26.TabIndex = 32
         Me.Button26.Text = "Z-Report"
-        Me.Button26.UseVisualStyleBackColor = True
+        Me.Button26.UseVisualStyleBackColor = False
         '
         'Button27
         '
-        Me.Button27.Location = New System.Drawing.Point(302, 22)
+        Me.Button27.BackColor = System.Drawing.Color.FromArgb(CType(CType(230, Byte), Integer), CType(CType(126, Byte), Integer), CType(CType(34, Byte), Integer))
+        Me.Button27.FlatAppearance.BorderSize = 0
+        Me.Button27.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(211, Byte), Integer), CType(CType(84, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.Button27.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button27.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button27.ForeColor = System.Drawing.Color.White
+        Me.Button27.Location = New System.Drawing.Point(350, 30)
         Me.Button27.Name = "Button27"
-        Me.Button27.Size = New System.Drawing.Size(88, 49)
+        Me.Button27.Size = New System.Drawing.Size(100, 50)
         Me.Button27.TabIndex = 33
         Me.Button27.Text = "X-Report"
-        Me.Button27.UseVisualStyleBackColor = True
+        Me.Button27.UseVisualStyleBackColor = False
         '
         'Button28
         '
-        Me.Button28.Location = New System.Drawing.Point(396, 22)
+        Me.Button28.BackColor = System.Drawing.Color.FromArgb(CType(CType(149, Byte), Integer), CType(CType(165, Byte), Integer), CType(CType(166, Byte), Integer))
+        Me.Button28.FlatAppearance.BorderSize = 0
+        Me.Button28.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(127, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(141, Byte), Integer))
+        Me.Button28.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.Button28.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Button28.ForeColor = System.Drawing.Color.White
+        Me.Button28.Location = New System.Drawing.Point(460, 30)
         Me.Button28.Name = "Button28"
-        Me.Button28.Size = New System.Drawing.Size(104, 49)
+        Me.Button28.Size = New System.Drawing.Size(120, 50)
         Me.Button28.TabIndex = 34
         Me.Button28.Text = "Reprint Receipt"
-        Me.Button28.UseVisualStyleBackColor = True
+        Me.Button28.UseVisualStyleBackColor = False
         '
         'btnLog
         '
-        Me.btnLog.BackColor = System.Drawing.Color.Red
-        Me.btnLog.Font = New System.Drawing.Font("Rockwell Condensed", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.btnLog.Location = New System.Drawing.Point(841, 22)
+        Me.btnLog.BackColor = System.Drawing.Color.FromArgb(CType(CType(231, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(60, Byte), Integer))
+        Me.btnLog.FlatAppearance.BorderSize = 0
+        Me.btnLog.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(43, Byte), Integer))
+        Me.btnLog.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnLog.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLog.ForeColor = System.Drawing.Color.White
+        Me.btnLog.Location = New System.Drawing.Point(850, 30)
         Me.btnLog.Name = "btnLog"
-        Me.btnLog.Size = New System.Drawing.Size(102, 46)
+        Me.btnLog.Size = New System.Drawing.Size(120, 50)
         Me.btnLog.TabIndex = 35
         Me.btnLog.Text = "Log Off"
         Me.btnLog.UseVisualStyleBackColor = False
         '
         'swipe
         '
-        Me.swipe.Location = New System.Drawing.Point(9, 277)
+        Me.swipe.BackColor = System.Drawing.Color.FromArgb(CType(CType(155, Byte), Integer), CType(CType(89, Byte), Integer), CType(CType(182, Byte), Integer))
+        Me.swipe.FlatAppearance.BorderSize = 0
+        Me.swipe.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(142, Byte), Integer), CType(CType(68, Byte), Integer), CType(CType(173, Byte), Integer))
+        Me.swipe.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.swipe.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.swipe.ForeColor = System.Drawing.Color.White
+        Me.swipe.Location = New System.Drawing.Point(20, 270)
         Me.swipe.Name = "swipe"
-        Me.swipe.Size = New System.Drawing.Size(108, 66)
+        Me.swipe.Size = New System.Drawing.Size(100, 50)
         Me.swipe.TabIndex = 112
         Me.swipe.Text = "SWIPE"
-        Me.swipe.UseVisualStyleBackColor = True
+        Me.swipe.UseVisualStyleBackColor = False
         '
         'zwd
         '
-        Me.zwd.Location = New System.Drawing.Point(9, 210)
+        Me.zwd.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(152, Byte), Integer), CType(CType(219, Byte), Integer))
+        Me.zwd.FlatAppearance.BorderSize = 0
+        Me.zwd.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(41, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.zwd.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.zwd.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.zwd.ForeColor = System.Drawing.Color.White
+        Me.zwd.Location = New System.Drawing.Point(20, 210)
         Me.zwd.Name = "zwd"
-        Me.zwd.Size = New System.Drawing.Size(108, 61)
+        Me.zwd.Size = New System.Drawing.Size(100, 50)
         Me.zwd.TabIndex = 111
         Me.zwd.Text = "ZWD"
-        Me.zwd.UseVisualStyleBackColor = True
+        Me.zwd.UseVisualStyleBackColor = False
         '
         'usd
         '
-        Me.usd.Location = New System.Drawing.Point(9, 136)
+        Me.usd.BackColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.usd.FlatAppearance.BorderSize = 0
+        Me.usd.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(39, Byte), Integer), CType(CType(174, Byte), Integer), CType(CType(96, Byte), Integer))
+        Me.usd.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.usd.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.usd.ForeColor = System.Drawing.Color.White
+        Me.usd.Location = New System.Drawing.Point(20, 150)
         Me.usd.Name = "usd"
-        Me.usd.Size = New System.Drawing.Size(108, 68)
+        Me.usd.Size = New System.Drawing.Size(100, 50)
         Me.usd.TabIndex = 110
         Me.usd.Text = "USD"
-        Me.usd.UseVisualStyleBackColor = True
+        Me.usd.UseVisualStyleBackColor = False
         '
         'rtfReceiptB
         '
@@ -793,6 +955,66 @@ Partial Class Entries
         Me.ProductsDataGridView.Size = New System.Drawing.Size(618, 438)
         Me.ProductsDataGridView.TabIndex = 139
         Me.ProductsDataGridView.Visible = False
+        '
+        'pnlProductCards
+        '
+        Me.pnlProductCards.AutoScroll = True
+        Me.pnlProductCards.BackColor = System.Drawing.Color.FromArgb(CType(CType(236, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(241, Byte), Integer))
+        Me.pnlProductCards.Location = New System.Drawing.Point(9, 137)
+        Me.pnlProductCards.Name = "pnlProductCards"
+        Me.pnlProductCards.Size = New System.Drawing.Size(618, 438)
+        Me.pnlProductCards.TabIndex = 159
+        Me.pnlProductCards.Visible = False
+        '
+        'txtQuantity
+        '
+        Me.txtQuantity.Font = New System.Drawing.Font("Segoe UI", 14.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.txtQuantity.Location = New System.Drawing.Point(140, 590)
+        Me.txtQuantity.Name = "txtQuantity"
+        Me.txtQuantity.Size = New System.Drawing.Size(120, 32)
+        Me.txtQuantity.TabIndex = 160
+        Me.txtQuantity.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.txtQuantity.Visible = False
+        Me.txtQuantity.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        '
+        'lblQuantity
+        '
+        Me.lblQuantity.AutoSize = True
+        Me.lblQuantity.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblQuantity.ForeColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.lblQuantity.Location = New System.Drawing.Point(20, 595)
+        Me.lblQuantity.Name = "lblQuantity"
+        Me.lblQuantity.Size = New System.Drawing.Size(75, 21)
+        Me.lblQuantity.TabIndex = 161
+        Me.lblQuantity.Text = "Quantity:"
+        Me.lblQuantity.Visible = False
+        '
+        'btnAddToReceipt
+        '
+        Me.btnAddToReceipt.BackColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.btnAddToReceipt.FlatAppearance.BorderSize = 0
+        Me.btnAddToReceipt.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(39, Byte), Integer), CType(CType(174, Byte), Integer), CType(CType(96, Byte), Integer))
+        Me.btnAddToReceipt.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnAddToReceipt.Font = New System.Drawing.Font("Segoe UI", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnAddToReceipt.ForeColor = System.Drawing.Color.White
+        Me.btnAddToReceipt.Location = New System.Drawing.Point(260, 585)
+        Me.btnAddToReceipt.Name = "btnAddToReceipt"
+        Me.btnAddToReceipt.Size = New System.Drawing.Size(120, 40)
+        Me.btnAddToReceipt.TabIndex = 162
+        Me.btnAddToReceipt.Text = "Add to Receipt"
+        Me.btnAddToReceipt.UseVisualStyleBackColor = False
+        Me.btnAddToReceipt.Visible = False
+        '
+        'lblSelectedProduct
+        '
+        Me.lblSelectedProduct.AutoSize = True
+        Me.lblSelectedProduct.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblSelectedProduct.ForeColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.lblSelectedProduct.Location = New System.Drawing.Point(400, 595)
+        Me.lblSelectedProduct.Name = "lblSelectedProduct"
+        Me.lblSelectedProduct.Size = New System.Drawing.Size(0, 20)
+        Me.lblSelectedProduct.TabIndex = 163
+        Me.lblSelectedProduct.Visible = False
         '
         'DataGridViewTextBoxColumn1
         '
@@ -989,31 +1211,49 @@ Partial Class Entries
         '
         'fish
         '
-        Me.fish.Location = New System.Drawing.Point(291, 149)
+        Me.fish.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(73, Byte), Integer), CType(CType(94, Byte), Integer))
+        Me.fish.FlatAppearance.BorderSize = 0
+        Me.fish.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(44, Byte), Integer), CType(CType(62, Byte), Integer), CType(CType(80, Byte), Integer))
+        Me.fish.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.fish.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.fish.ForeColor = System.Drawing.Color.White
+        Me.fish.Location = New System.Drawing.Point(310, 160)
         Me.fish.Name = "fish"
-        Me.fish.Size = New System.Drawing.Size(145, 63)
+        Me.fish.Size = New System.Drawing.Size(160, 70)
         Me.fish.TabIndex = 157
         Me.fish.Text = "FISH"
-        Me.fish.UseVisualStyleBackColor = True
+        Me.fish.UseVisualStyleBackColor = False
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(552, 552)
+        Me.btnClose.BackColor = System.Drawing.Color.FromArgb(CType(CType(149, Byte), Integer), CType(CType(165, Byte), Integer), CType(CType(166, Byte), Integer))
+        Me.btnClose.FlatAppearance.BorderSize = 0
+        Me.btnClose.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(127, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(141, Byte), Integer))
+        Me.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnClose.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnClose.ForeColor = System.Drawing.Color.White
+        Me.btnClose.Location = New System.Drawing.Point(550, 560)
         Me.btnClose.Name = "btnClose"
-        Me.btnClose.Size = New System.Drawing.Size(75, 23)
+        Me.btnClose.Size = New System.Drawing.Size(100, 35)
         Me.btnClose.TabIndex = 158
         Me.btnClose.Text = "Back"
-        Me.btnClose.UseVisualStyleBackColor = True
+        Me.btnClose.UseVisualStyleBackColor = False
         Me.btnClose.Visible = False
         '
         'remove
         '
-        Me.remove.Location = New System.Drawing.Point(918, 138)
+        Me.remove.BackColor = System.Drawing.Color.FromArgb(CType(CType(231, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(60, Byte), Integer))
+        Me.remove.FlatAppearance.BorderSize = 0
+        Me.remove.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(43, Byte), Integer))
+        Me.remove.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.remove.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.remove.ForeColor = System.Drawing.Color.White
+        Me.remove.Location = New System.Drawing.Point(890, 105)
         Me.remove.Name = "remove"
-        Me.remove.Size = New System.Drawing.Size(97, 34)
+        Me.remove.Size = New System.Drawing.Size(120, 35)
         Me.remove.TabIndex = 118
         Me.remove.Text = "Remove Item"
-        Me.remove.UseVisualStyleBackColor = True
+        Me.remove.UseVisualStyleBackColor = False
         Me.remove.Visible = False
         '
         'Entries
@@ -1021,8 +1261,13 @@ Partial Class Entries
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.AutoScroll = True
-        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(1023, 716)
+        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(236, Byte), Integer), CType(CType(240, Byte), Integer), CType(CType(241, Byte), Integer))
+        Me.ClientSize = New System.Drawing.Size(1024, 720)
+        Me.Controls.Add(Me.lblSelectedProduct)
+        Me.Controls.Add(Me.btnAddToReceipt)
+        Me.Controls.Add(Me.lblQuantity)
+        Me.Controls.Add(Me.txtQuantity)
+        Me.Controls.Add(Me.pnlProductCards)
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.fish)
         Me.Controls.Add(Me.Panel2)
@@ -1187,4 +1432,9 @@ Partial Class Entries
     Friend WithEvents btnClose As System.Windows.Forms.Button
     Friend WithEvents quantitybx As System.Windows.Forms.TextBox
     Friend WithEvents remove As System.Windows.Forms.Button
+    Friend WithEvents pnlProductCards As System.Windows.Forms.Panel
+    Friend WithEvents txtQuantity As System.Windows.Forms.TextBox
+    Friend WithEvents lblQuantity As System.Windows.Forms.Label
+    Friend WithEvents btnAddToReceipt As System.Windows.Forms.Button
+    Friend WithEvents lblSelectedProduct As System.Windows.Forms.Label
 End Class

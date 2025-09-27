@@ -34,13 +34,16 @@ Partial Class products
         '
         'ListBox1
         '
+        Me.ListBox1.BackColor = System.Drawing.Color.White
+        Me.ListBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.ListBox1.DataBindings.Add(New System.Windows.Forms.Binding("SelectedValue", Me.SalesBindingSource, "Description", True))
         Me.ListBox1.DataSource = Me.SalesBindingSource
         Me.ListBox1.DisplayMember = "Description"
+        Me.ListBox1.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ListBox1.FormattingEnabled = True
-        Me.ListBox1.Location = New System.Drawing.Point(1, 1)
+        Me.ListBox1.Location = New System.Drawing.Point(10, 10)
         Me.ListBox1.Name = "ListBox1"
-        Me.ListBox1.Size = New System.Drawing.Size(392, 472)
+        Me.ListBox1.Size = New System.Drawing.Size(400, 480)
         Me.ListBox1.TabIndex = 0
         Me.ListBox1.ValueMember = "Quantity"
         '
@@ -62,7 +65,8 @@ Partial Class products
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(393, 489)
+        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
+        Me.ClientSize = New System.Drawing.Size(420, 500)
         Me.Controls.Add(Me.ListBox1)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False

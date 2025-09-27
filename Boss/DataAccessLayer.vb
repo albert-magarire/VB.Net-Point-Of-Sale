@@ -118,10 +118,10 @@ Public Class DataAccessLayer
     ''' <returns>True if credentials are valid</returns>
     Public Shared Function ValidateUser(accountType As String, password As String) As Boolean
         Try
-            Dim query As String = "SELECT COUNT(*) FROM Users WHERE AccType = @AccType AND PassCode = @PassCode"
+            Dim query As String = "SELECT COUNT(*) FROM Users WHERE AccType = @AccType AND Passcode = @Passcode"
             Dim parameters As New Dictionary(Of String, Object) From {
                 {"@AccType", accountType},
-                {"@PassCode", HashPassword(password)}
+                {"@Passcode", password} ' Using plain text password for now
             }
             
             Dim result As Object = ExecuteScalar(query, parameters)
@@ -146,26 +146,26 @@ Public Class DataAccessLayer
     ''' <summary>
     ''' Gets daily totals for a specific date
     ''' </summary>
-    ''' <param name="date">Date to get totals for</param>
+    ''' <param name="targetDate">Date to get totals for</param>
     ''' <returns>Daily totals data</returns>
-    Public Shared Function GetDailyTotals(date As DateTime) As DailyTotalsData
+    Public Shared Function GetDailyTotals(targetDate As DateTime) As DailyTotalsData
         Try
             Dim query As String = "SELECT TDate, ZTotal, UTotal, NoR FROM DTotals WHERE TDate = @Date"
             Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Date", date.Date}
+                {"@Date", targetDate.Date}
             }
             
             Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
                 If reader.Read() Then
                     Return New DailyTotalsData With {
-                        .Date = Convert.ToDateTime(reader("TDate")),
+                        .[Date] = Convert.ToDateTime(reader("TDate")),
                         .ZTotal = If(IsDBNull(reader("ZTotal")), 0, Convert.ToInt32(reader("ZTotal"))),
                         .UTotal = If(IsDBNull(reader("UTotal")), 0, Convert.ToInt32(reader("UTotal"))),
                         .ReceiptCount = If(IsDBNull(reader("NoR")), 0, Convert.ToInt32(reader("NoR")))
                     }
                 Else
                     Return New DailyTotalsData With {
-                        .Date = date.Date,
+                        .[Date] = targetDate.Date,
                         .ZTotal = 0,
                         .UTotal = 0,
                         .ReceiptCount = 0
@@ -188,14 +188,14 @@ Public Class DataAccessLayer
                 {"@ZTotal", dailyTotals.ZTotal},
                 {"@UTotal", dailyTotals.UTotal},
                 {"@NoR", dailyTotals.ReceiptCount},
-                {"@Date", dailyTotals.Date}
+                {"@Date", dailyTotals.[Date]}
             }
             
             ExecuteNonQuery(query, parameters)
         Catch ex As Exception
             Throw New DataAccessException("Failed to update daily totals", ex)
         End Try
-    End Function
+    End Sub
 
     ''' <summary>
     ''' Inserts a new sale record
@@ -210,7 +210,7 @@ Public Class DataAccessLayer
                 {"@Receipt", sale.Receipt},
                 {"@Price", sale.Price},
                 {"@Total", sale.Total},
-                {"@Date", sale.Date},
+                {"@Date", sale.[Date]},
                 {"@Waiter", sale.Waiter},
                 {"@Order", sale.Order},
                 {"@Currency", sale.Currency},
@@ -274,7 +274,7 @@ End Class
 ''' Data structure for daily totals
 ''' </summary>
 Public Class DailyTotalsData
-    Public Property Date As DateTime
+    Public Property [Date] As DateTime
     Public Property ZTotal As Decimal
     Public Property UTotal As Decimal
     Public Property ReceiptCount As Integer
@@ -289,7 +289,7 @@ Public Class SaleData
     Public Property Receipt As String
     Public Property Price As Decimal
     Public Property Total As Decimal
-    Public Property Date As DateTime
+    Public Property [Date] As DateTime
     Public Property Waiter As String
     Public Property Order As String
     Public Property Currency As String

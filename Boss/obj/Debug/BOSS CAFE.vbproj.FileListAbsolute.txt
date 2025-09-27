@@ -14,3 +14,18 @@ C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CA
 C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Users.resources
 C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.waiters.resources
 C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.vbproj.GenerateResource.cache
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS_CAFE.Resources.resources
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.vbproj.CoreCompileInputs.cache
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.exe
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.xml
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.pdb
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\Boss.accdb
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\BOSS CAFE.exe.config
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\BOSS CAFE.exe.manifest
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\BOSS CAFE.application
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\BOSS CAFE.exe
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\BOSS CAFE.pdb
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\bin\Debug\BOSS CAFE.xml
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.exe.manifest
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.application
+C:\Users\alber\AndroidStudioProjects\VB.Net-Point-Of-Sale\Boss\obj\Debug\BOSS CAFE.exe.config

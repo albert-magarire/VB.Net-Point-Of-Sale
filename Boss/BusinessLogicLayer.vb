@@ -154,11 +154,11 @@ Public Class BusinessLogicLayer
     ''' <summary>
     ''' Calculates daily totals with proper validation
     ''' </summary>
-    ''' <param name="date">Date to calculate totals for</param>
+    ''' <param name="targetDate">Date to calculate totals for</param>
     ''' <returns>Daily totals</returns>
-    Public Shared Function CalculateDailyTotals(date As DateTime) As DailyTotalsData
+    Public Shared Function CalculateDailyTotals(targetDate As DateTime) As DailyTotalsData
         Try
-            Return DataAccessLayer.GetDailyTotals(date)
+            Return DataAccessLayer.GetDailyTotals(targetDate)
         Catch ex As DataAccessException
             Throw New BusinessLogicException("Failed to calculate daily totals: " & ex.Message, ex)
         End Try
@@ -188,11 +188,11 @@ Public Class BusinessLogicLayer
     ''' <summary>
     ''' Generates a unique receipt number
     ''' </summary>
-    ''' <param name="date">Date for the receipt</param>
+    ''' <param name="targetDate">Date for the receipt</param>
     ''' <returns>Unique receipt number</returns>
-    Public Shared Function GenerateReceiptNumber(date As DateTime) As String
+    Public Shared Function GenerateReceiptNumber(targetDate As DateTime) As String
         Try
-            Dim dailyTotals = DataAccessLayer.GetDailyTotals(date)
+            Dim dailyTotals = DataAccessLayer.GetDailyTotals(targetDate)
             Dim nextReceiptNumber = dailyTotals.ReceiptCount + 1
             Return nextReceiptNumber.ToString("D3") ' Format as 3-digit number with leading zeros
         Catch ex As DataAccessException

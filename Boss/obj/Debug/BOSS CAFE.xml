@@ -1,0 +1,490 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+BOSS CAFE
+</name>
+</assembly>
+<members>
+<member name="T:BOSS_CAFE.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:BOSS_CAFE.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:BOSS_CAFE.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:BOSS_CAFE.My.Resources.Resources._281143259_1043322533288007_5617556930608310033_n">
+<summary>
+  Looks up a localized resource of type System.Drawing.Bitmap.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet">
+<summary>
+Represents a strongly typed in-memory cache of data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.DTotalsDataTable">
+<summary>
+Represents the strongly named DataTable class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.ProductsDataTable">
+<summary>
+Represents the strongly named DataTable class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.SalesDataTable">
+<summary>
+Represents the strongly named DataTable class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.TotalsDataTable">
+<summary>
+Represents the strongly named DataTable class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.UsersDataTable">
+<summary>
+Represents the strongly named DataTable class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.WaitersDataTable">
+<summary>
+Represents the strongly named DataTable class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.DTotalsRow">
+<summary>
+Represents strongly named DataRow class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.ProductsRow">
+<summary>
+Represents strongly named DataRow class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.SalesRow">
+<summary>
+Represents strongly named DataRow class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.TotalsRow">
+<summary>
+Represents strongly named DataRow class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.UsersRow">
+<summary>
+Represents strongly named DataRow class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.WaitersRow">
+<summary>
+Represents strongly named DataRow class.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.DTotalsRowChangeEvent">
+<summary>
+Row event argument class
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.ProductsRowChangeEvent">
+<summary>
+Row event argument class
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.SalesRowChangeEvent">
+<summary>
+Row event argument class
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.TotalsRowChangeEvent">
+<summary>
+Row event argument class
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.UsersRowChangeEvent">
+<summary>
+Row event argument class
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSet.WaitersRowChangeEvent">
+<summary>
+Row event argument class
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.DTotalsTableAdapter">
+<summary>
+Represents the connection and commands used to retrieve and save data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.ProductsTableAdapter">
+<summary>
+Represents the connection and commands used to retrieve and save data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.SalesTableAdapter">
+<summary>
+Represents the connection and commands used to retrieve and save data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.TotalsTableAdapter">
+<summary>
+Represents the connection and commands used to retrieve and save data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.UsersTableAdapter">
+<summary>
+Represents the connection and commands used to retrieve and save data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.WaitersTableAdapter">
+<summary>
+Represents the connection and commands used to retrieve and save data.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager">
+<summary>
+TableAdapterManager is used to coordinate TableAdapters in the dataset to enable Hierarchical Update scenarios
+</summary>
+</member>
+<member name="M:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.UpdateUpdatedRows(BOSS_CAFE.BossDataSet,System.Collections.Generic.List{System.Data.DataRow},System.Collections.Generic.List{System.Data.DataRow})">
+<summary>
+Update rows in top-down order.
+</summary>
+</member>
+<member name="M:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.UpdateInsertedRows(BOSS_CAFE.BossDataSet,System.Collections.Generic.List{System.Data.DataRow})">
+<summary>
+Insert rows in top-down order.
+</summary>
+</member>
+<member name="M:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.UpdateDeletedRows(BOSS_CAFE.BossDataSet,System.Collections.Generic.List{System.Data.DataRow})">
+<summary>
+Delete rows in bottom-up order.
+</summary>
+</member>
+<member name="M:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.GetRealUpdatedRows(System.Data.DataRow[],System.Collections.Generic.List{System.Data.DataRow})">
+<summary>
+Remove inserted rows that become updated rows after calling TableAdapter.Update(inserted rows) first
+</summary>
+</member>
+<member name="M:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.UpdateAll(BOSS_CAFE.BossDataSet)">
+<summary>
+Update all changes to the dataset.
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.UpdateOrderOption">
+<summary>
+Update Order Option
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BossDataSetTableAdapters.TableAdapterManager.SelfReferenceComparer">
+<summary>
+Used to sort self-referenced table's rows
+</summary>
+</member>
+<member name="T:BOSS_CAFE.BusinessLogicLayer">
+ <summary>
+ Business logic layer for the Boss Cafe POS system
+ Contains business rules and validation logic
+ </summary>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.AuthenticateUser(System.String,System.String)">
+ <summary>
+ Authenticates a user with proper validation
+ </summary>
+ <param name="accountType">User account type</param>
+ <param name="password">User password</param>
+ <returns>Authentication result</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.ProcessSale(BOSS_CAFE.SaleData)">
+ <summary>
+ Processes a new sale with validation and business rules
+ </summary>
+ <param name="saleData">Sale data to process</param>
+ <returns>Processing result</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.ValidateSaleData(BOSS_CAFE.SaleData)">
+ <summary>
+ Validates sale data according to business rules
+ </summary>
+ <param name="saleData">Sale data to validate</param>
+ <returns>Validation result</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.ApplySaleBusinessRules(BOSS_CAFE.SaleData)">
+ <summary>
+ Applies business rules to sale data
+ </summary>
+ <param name="saleData">Sale data to process</param>
+ <returns>Validation result</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.GetProductsByCategory(System.String)">
+ <summary>
+ Gets products by category with caching
+ </summary>
+ <param name="category">Product category</param>
+ <returns>List of products</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.CalculateDailyTotals(System.DateTime)">
+ <summary>
+ Calculates daily totals with proper validation
+ </summary>
+ <param name="targetDate">Date to calculate totals for</param>
+ <returns>Daily totals</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.UpdateDailyTotals(BOSS_CAFE.DailyTotalsData)">
+ <summary>
+ Updates daily totals with validation
+ </summary>
+ <param name="dailyTotals">Daily totals to update</param>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.GenerateReceiptNumber(System.DateTime)">
+ <summary>
+ Generates a unique receipt number
+ </summary>
+ <param name="targetDate">Date for the receipt</param>
+ <returns>Unique receipt number</returns>
+</member>
+<member name="M:BOSS_CAFE.BusinessLogicLayer.ValidateProduct(BOSS_CAFE.ProductData)">
+ <summary>
+ Validates product data
+ </summary>
+ <param name="product">Product data to validate</param>
+ <returns>Validation result</returns>
+</member>
+<member name="T:BOSS_CAFE.BusinessLogicException">
+ <summary>
+ Custom exception for business logic errors
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.AuthenticationResult">
+ <summary>
+ Represents the result of an authentication operation
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.ProcessingResult">
+ <summary>
+ Represents the result of a processing operation
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.UserInfo">
+ <summary>
+ Contains user information
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.DataAccessLayer">
+ <summary>
+ Centralized data access layer for the Boss Cafe POS system
+ Provides secure database operations with proper error handling
+ </summary>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.CreateConnection">
+ <summary>
+ Creates a new database connection with proper error handling
+ </summary>
+ <returns>OleDbConnection object</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.ExecuteQuery(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+ <summary>
+ Executes a parameterized query safely
+ </summary>
+ <param name="query">SQL query with parameters</param>
+ <param name="parameters">Dictionary of parameter names and values</param>
+ <returns>DataReader with results</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.ExecuteNonQuery(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+ <summary>
+ Executes a parameterized non-query command (INSERT, UPDATE, DELETE)
+ </summary>
+ <param name="query">SQL command with parameters</param>
+ <param name="parameters">Dictionary of parameter names and values</param>
+ <returns>Number of affected rows</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.ExecuteScalar(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+ <summary>
+ Executes a scalar query safely
+ </summary>
+ <param name="query">SQL query with parameters</param>
+ <param name="parameters">Dictionary of parameter names and values</param>
+ <returns>Single value result</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.ValidateUser(System.String,System.String)">
+ <summary>
+ Validates user credentials securely
+ </summary>
+ <param name="accountType">User account type</param>
+ <param name="password">Plain text password</param>
+ <returns>True if credentials are valid</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.HashPassword(System.String)">
+ <summary>
+ Hashes a password using SHA256
+ </summary>
+ <param name="password">Plain text password</param>
+ <returns>Hashed password</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.GetDailyTotals(System.DateTime)">
+ <summary>
+ Gets daily totals for a specific date
+ </summary>
+ <param name="targetDate">Date to get totals for</param>
+ <returns>Daily totals data</returns>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.UpdateDailyTotals(BOSS_CAFE.DailyTotalsData)">
+ <summary>
+ Updates daily totals
+ </summary>
+ <param name="dailyTotals">Daily totals data to update</param>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.InsertSale(BOSS_CAFE.SaleData)">
+ <summary>
+ Inserts a new sale record
+ </summary>
+ <param name="sale">Sale data to insert</param>
+</member>
+<member name="M:BOSS_CAFE.DataAccessLayer.GetProductsByCategory(System.String)">
+ <summary>
+ Gets products by category
+ </summary>
+ <param name="category">Product category</param>
+ <returns>List of products</returns>
+</member>
+<member name="T:BOSS_CAFE.DataAccessException">
+ <summary>
+ Custom exception for data access layer errors
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.DailyTotalsData">
+ <summary>
+ Data structure for daily totals
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.SaleData">
+ <summary>
+ Data structure for sale records
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.ProductData">
+ <summary>
+ Data structure for product information
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.DatabaseSetup">
+ <summary>
+ Utility class to set up the Users table with default data
+ </summary>
+</member>
+<member name="M:BOSS_CAFE.DatabaseSetup.SetupUsersTable">
+ <summary>
+ Sets up the Users table with default users and password 1207
+ </summary>
+</member>
+<member name="M:BOSS_CAFE.DatabaseSetup.CheckUsersTable">
+ <summary>
+ Checks if the Users table exists and has data
+ </summary>
+</member>
+<member name="T:BOSS_CAFE.ValidationHelper">
+ <summary>
+ Utility class for input validation and data validation
+ </summary>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateRequired(System.String,System.String)">
+ <summary>
+ Validates if a string is not null or empty
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateEmail(System.String)">
+ <summary>
+ Validates if a string is a valid email address
+ </summary>
+ <param name="email">Email to validate</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateDecimal(System.String,System.String,System.Decimal,System.Decimal)">
+ <summary>
+ Validates if a string is a valid decimal number
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <param name="minValue">Minimum allowed value</param>
+ <param name="maxValue">Maximum allowed value</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateInteger(System.String,System.String,System.Int32,System.Int32)">
+ <summary>
+ Validates if a string is a valid integer
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <param name="minValue">Minimum allowed value</param>
+ <param name="maxValue">Maximum allowed value</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateDate(System.String,System.String)">
+ <summary>
+ Validates if a string is a valid date
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidatePassword(System.String)">
+ <summary>
+ Validates password strength
+ </summary>
+ <param name="password">Password to validate</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateAlphanumeric(System.String,System.String)">
+ <summary>
+ Validates if a string contains only alphanumeric characters
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateLength(System.String,System.String,System.Int32,System.Int32)">
+ <summary>
+ Validates if a string length is within specified range
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <param name="minLength">Minimum length</param>
+ <param name="maxLength">Maximum length</param>
+ <returns>True if valid</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.SanitizeInput(System.String)">
+ <summary>
+ Sanitizes input to prevent SQL injection
+ </summary>
+ <param name="input">Input to sanitize</param>
+ <returns>Sanitized input</returns>
+</member>
+<member name="M:BOSS_CAFE.ValidationHelper.ValidateCurrency(System.String,System.String)">
+ <summary>
+ Validates currency amount
+ </summary>
+ <param name="value">Value to validate</param>
+ <param name="fieldName">Name of the field for error message</param>
+ <returns>True if valid</returns>
+</member>
+<member name="T:BOSS_CAFE.ValidationResult">
+ <summary>
+ Represents the result of a validation operation
+ </summary>
+</member>
+</members>
+</doc>

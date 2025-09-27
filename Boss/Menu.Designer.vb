@@ -78,112 +78,147 @@ Partial Class Menu
         'CodeLabel
         '
         CodeLabel.AutoSize = True
-        CodeLabel.ForeColor = System.Drawing.Color.White
-        CodeLabel.Location = New System.Drawing.Point(555, 44)
+        CodeLabel.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        CodeLabel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        CodeLabel.Location = New System.Drawing.Point(560, 50)
         CodeLabel.Name = "CodeLabel"
-        CodeLabel.Size = New System.Drawing.Size(35, 13)
+        CodeLabel.Size = New System.Drawing.Size(45, 20)
         CodeLabel.TabIndex = 37
         CodeLabel.Text = "Code:"
         '
         'DescriptionLabel
         '
         DescriptionLabel.AutoSize = True
-        DescriptionLabel.ForeColor = System.Drawing.Color.White
-        DescriptionLabel.Location = New System.Drawing.Point(555, 70)
+        DescriptionLabel.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DescriptionLabel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        DescriptionLabel.Location = New System.Drawing.Point(560, 80)
         DescriptionLabel.Name = "DescriptionLabel"
-        DescriptionLabel.Size = New System.Drawing.Size(63, 13)
+        DescriptionLabel.Size = New System.Drawing.Size(85, 20)
         DescriptionLabel.TabIndex = 39
         DescriptionLabel.Text = "Description:"
         '
         'CategoryLabel
         '
         CategoryLabel.AutoSize = True
-        CategoryLabel.ForeColor = System.Drawing.Color.White
-        CategoryLabel.Location = New System.Drawing.Point(555, 96)
+        CategoryLabel.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        CategoryLabel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        CategoryLabel.Location = New System.Drawing.Point(560, 110)
         CategoryLabel.Name = "CategoryLabel"
-        CategoryLabel.Size = New System.Drawing.Size(52, 13)
+        CategoryLabel.Size = New System.Drawing.Size(70, 20)
         CategoryLabel.TabIndex = 41
         CategoryLabel.Text = "Category:"
         '
         'ZWLLabel
         '
         ZWLLabel.AutoSize = True
-        ZWLLabel.ForeColor = System.Drawing.Color.White
-        ZWLLabel.Location = New System.Drawing.Point(555, 122)
+        ZWLLabel.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        ZWLLabel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        ZWLLabel.Location = New System.Drawing.Point(560, 140)
         ZWLLabel.Name = "ZWLLabel"
-        ZWLLabel.Size = New System.Drawing.Size(34, 13)
+        ZWLLabel.Size = New System.Drawing.Size(40, 20)
         ZWLLabel.TabIndex = 43
         ZWLLabel.Text = "ZWL:"
         '
         'USDLabel
         '
         USDLabel.AutoSize = True
-        USDLabel.ForeColor = System.Drawing.Color.White
-        USDLabel.Location = New System.Drawing.Point(555, 148)
+        USDLabel.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        USDLabel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(189, Byte), Integer), CType(CType(195, Byte), Integer), CType(CType(199, Byte), Integer))
+        USDLabel.Location = New System.Drawing.Point(560, 170)
         USDLabel.Name = "USDLabel"
-        USDLabel.Size = New System.Drawing.Size(33, 13)
+        USDLabel.Size = New System.Drawing.Size(39, 20)
         USDLabel.TabIndex = 45
         USDLabel.Text = "USD:"
         '
         'btnMenu
         '
-        Me.btnMenu.ForeColor = System.Drawing.Color.Black
-        Me.btnMenu.Location = New System.Drawing.Point(549, 269)
+        Me.btnMenu.BackColor = System.Drawing.Color.FromArgb(CType(CType(149, Byte), Integer), CType(CType(165, Byte), Integer), CType(CType(166, Byte), Integer))
+        Me.btnMenu.FlatAppearance.BorderSize = 0
+        Me.btnMenu.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(127, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(141, Byte), Integer))
+        Me.btnMenu.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnMenu.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnMenu.ForeColor = System.Drawing.Color.White
+        Me.btnMenu.Location = New System.Drawing.Point(550, 280)
         Me.btnMenu.Name = "btnMenu"
-        Me.btnMenu.Size = New System.Drawing.Size(94, 23)
+        Me.btnMenu.Size = New System.Drawing.Size(120, 35)
         Me.btnMenu.TabIndex = 36
         Me.btnMenu.Text = "Back to Menu"
-        Me.btnMenu.UseVisualStyleBackColor = True
+        Me.btnMenu.UseVisualStyleBackColor = False
         '
         'btnLog
         '
-        Me.btnLog.ForeColor = System.Drawing.Color.Black
-        Me.btnLog.Location = New System.Drawing.Point(649, 269)
+        Me.btnLog.BackColor = System.Drawing.Color.FromArgb(CType(CType(231, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(60, Byte), Integer))
+        Me.btnLog.FlatAppearance.BorderSize = 0
+        Me.btnLog.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(43, Byte), Integer))
+        Me.btnLog.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnLog.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLog.ForeColor = System.Drawing.Color.White
+        Me.btnLog.Location = New System.Drawing.Point(680, 280)
         Me.btnLog.Name = "btnLog"
-        Me.btnLog.Size = New System.Drawing.Size(75, 23)
+        Me.btnLog.Size = New System.Drawing.Size(100, 35)
         Me.btnLog.TabIndex = 35
         Me.btnLog.Text = "Log Out"
-        Me.btnLog.UseVisualStyleBackColor = True
+        Me.btnLog.UseVisualStyleBackColor = False
         '
         'btnSave
         '
-        Me.btnSave.ForeColor = System.Drawing.Color.Black
-        Me.btnSave.Location = New System.Drawing.Point(649, 233)
+        Me.btnSave.BackColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.btnSave.FlatAppearance.BorderSize = 0
+        Me.btnSave.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(39, Byte), Integer), CType(CType(174, Byte), Integer), CType(CType(96, Byte), Integer))
+        Me.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnSave.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnSave.ForeColor = System.Drawing.Color.White
+        Me.btnSave.Location = New System.Drawing.Point(680, 240)
         Me.btnSave.Name = "btnSave"
-        Me.btnSave.Size = New System.Drawing.Size(91, 23)
+        Me.btnSave.Size = New System.Drawing.Size(100, 35)
         Me.btnSave.TabIndex = 34
         Me.btnSave.Text = "Save"
-        Me.btnSave.UseVisualStyleBackColor = True
+        Me.btnSave.UseVisualStyleBackColor = False
         '
         'btnDelete
         '
-        Me.btnDelete.ForeColor = System.Drawing.Color.Black
-        Me.btnDelete.Location = New System.Drawing.Point(543, 233)
+        Me.btnDelete.BackColor = System.Drawing.Color.FromArgb(CType(CType(231, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(60, Byte), Integer))
+        Me.btnDelete.FlatAppearance.BorderSize = 0
+        Me.btnDelete.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(43, Byte), Integer))
+        Me.btnDelete.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnDelete.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnDelete.ForeColor = System.Drawing.Color.White
+        Me.btnDelete.Location = New System.Drawing.Point(550, 240)
         Me.btnDelete.Name = "btnDelete"
-        Me.btnDelete.Size = New System.Drawing.Size(90, 23)
+        Me.btnDelete.Size = New System.Drawing.Size(120, 35)
         Me.btnDelete.TabIndex = 33
         Me.btnDelete.Text = "Delete"
-        Me.btnDelete.UseVisualStyleBackColor = True
+        Me.btnDelete.UseVisualStyleBackColor = False
         '
         'btnUpdate
         '
-        Me.btnUpdate.ForeColor = System.Drawing.Color.Black
-        Me.btnUpdate.Location = New System.Drawing.Point(649, 204)
+        Me.btnUpdate.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(152, Byte), Integer), CType(CType(219, Byte), Integer))
+        Me.btnUpdate.FlatAppearance.BorderSize = 0
+        Me.btnUpdate.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(41, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnUpdate.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnUpdate.ForeColor = System.Drawing.Color.White
+        Me.btnUpdate.Location = New System.Drawing.Point(680, 200)
         Me.btnUpdate.Name = "btnUpdate"
-        Me.btnUpdate.Size = New System.Drawing.Size(91, 23)
+        Me.btnUpdate.Size = New System.Drawing.Size(100, 35)
         Me.btnUpdate.TabIndex = 32
         Me.btnUpdate.Text = "Update"
-        Me.btnUpdate.UseVisualStyleBackColor = True
+        Me.btnUpdate.UseVisualStyleBackColor = False
         '
         'btnNew
         '
-        Me.btnNew.ForeColor = System.Drawing.Color.Black
-        Me.btnNew.Location = New System.Drawing.Point(542, 204)
+        Me.btnNew.BackColor = System.Drawing.Color.FromArgb(CType(CType(155, Byte), Integer), CType(CType(89, Byte), Integer), CType(CType(182, Byte), Integer))
+        Me.btnNew.FlatAppearance.BorderSize = 0
+        Me.btnNew.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(142, Byte), Integer), CType(CType(68, Byte), Integer), CType(CType(173, Byte), Integer))
+        Me.btnNew.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnNew.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnNew.ForeColor = System.Drawing.Color.White
+        Me.btnNew.Location = New System.Drawing.Point(550, 200)
         Me.btnNew.Name = "btnNew"
-        Me.btnNew.Size = New System.Drawing.Size(91, 23)
+        Me.btnNew.Size = New System.Drawing.Size(120, 35)
         Me.btnNew.TabIndex = 31
         Me.btnNew.Text = "Add New"
-        Me.btnNew.UseVisualStyleBackColor = True
+        Me.btnNew.UseVisualStyleBackColor = False
         '
         'BossDataSet
         '
@@ -369,50 +404,65 @@ Partial Class Menu
         '
         'CodeTextBox
         '
+        Me.CodeTextBox.BackColor = System.Drawing.Color.White
+        Me.CodeTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.CodeTextBox.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.ProductsBindingSource, "Code", True))
-        Me.CodeTextBox.Location = New System.Drawing.Point(624, 41)
+        Me.CodeTextBox.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CodeTextBox.Location = New System.Drawing.Point(650, 50)
         Me.CodeTextBox.Name = "CodeTextBox"
-        Me.CodeTextBox.Size = New System.Drawing.Size(100, 20)
+        Me.CodeTextBox.Size = New System.Drawing.Size(120, 25)
         Me.CodeTextBox.TabIndex = 38
         '
         'DescriptionTextBox
         '
+        Me.DescriptionTextBox.BackColor = System.Drawing.Color.White
+        Me.DescriptionTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.DescriptionTextBox.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.ProductsBindingSource, "Description", True))
-        Me.DescriptionTextBox.Location = New System.Drawing.Point(624, 67)
+        Me.DescriptionTextBox.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.DescriptionTextBox.Location = New System.Drawing.Point(650, 80)
         Me.DescriptionTextBox.Name = "DescriptionTextBox"
-        Me.DescriptionTextBox.Size = New System.Drawing.Size(100, 20)
+        Me.DescriptionTextBox.Size = New System.Drawing.Size(120, 25)
         Me.DescriptionTextBox.TabIndex = 40
         '
         'CategoryTextBox
         '
+        Me.CategoryTextBox.BackColor = System.Drawing.Color.White
+        Me.CategoryTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.CategoryTextBox.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.ProductsBindingSource, "Category", True))
-        Me.CategoryTextBox.Location = New System.Drawing.Point(624, 93)
+        Me.CategoryTextBox.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.CategoryTextBox.Location = New System.Drawing.Point(650, 110)
         Me.CategoryTextBox.Name = "CategoryTextBox"
-        Me.CategoryTextBox.Size = New System.Drawing.Size(100, 20)
+        Me.CategoryTextBox.Size = New System.Drawing.Size(120, 25)
         Me.CategoryTextBox.TabIndex = 42
         '
         'ZWLTextBox
         '
+        Me.ZWLTextBox.BackColor = System.Drawing.Color.White
+        Me.ZWLTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.ZWLTextBox.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.ProductsBindingSource, "ZWL", True))
-        Me.ZWLTextBox.Location = New System.Drawing.Point(624, 119)
+        Me.ZWLTextBox.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ZWLTextBox.Location = New System.Drawing.Point(650, 140)
         Me.ZWLTextBox.Name = "ZWLTextBox"
-        Me.ZWLTextBox.Size = New System.Drawing.Size(100, 20)
+        Me.ZWLTextBox.Size = New System.Drawing.Size(120, 25)
         Me.ZWLTextBox.TabIndex = 44
         '
         'USDTextBox
         '
+        Me.USDTextBox.BackColor = System.Drawing.Color.White
+        Me.USDTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.USDTextBox.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.ProductsBindingSource, "USD", True))
-        Me.USDTextBox.Location = New System.Drawing.Point(624, 145)
+        Me.USDTextBox.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.USDTextBox.Location = New System.Drawing.Point(650, 170)
         Me.USDTextBox.Name = "USDTextBox"
-        Me.USDTextBox.Size = New System.Drawing.Size(100, 20)
+        Me.USDTextBox.Size = New System.Drawing.Size(120, 25)
         Me.USDTextBox.TabIndex = 46
         '
         'Menu
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(64, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(752, 296)
+        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
+        Me.ClientSize = New System.Drawing.Size(800, 330)
         Me.Controls.Add(CodeLabel)
         Me.Controls.Add(Me.CodeTextBox)
         Me.Controls.Add(DescriptionLabel)
@@ -431,13 +481,13 @@ Partial Class Menu
         Me.Controls.Add(Me.btnDelete)
         Me.Controls.Add(Me.btnUpdate)
         Me.Controls.Add(Me.btnNew)
-        Me.ForeColor = System.Drawing.Color.Black
+        Me.ForeColor = System.Drawing.Color.White
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
         Me.MinimizeBox = False
         Me.Name = "Menu"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Menu"
+        Me.Text = "Menu Management | Boss Cafe"
         CType(Me.BossDataSet, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.ProductsBindingSource, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.ProductsBindingNavigator, System.ComponentModel.ISupportInitialize).EndInit()

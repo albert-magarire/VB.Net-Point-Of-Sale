@@ -1,6 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Boss",
+    "\\Boss\\bin\\Debug"
   ],
   "SelectedNode": "\\BOSS CAFE.sln",
   "PreviewInSolutionExplorer": false

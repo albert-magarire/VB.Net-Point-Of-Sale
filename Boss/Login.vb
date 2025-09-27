@@ -3,7 +3,7 @@
 Public Class Login
     Private loginAttempts As Integer = 0
     Private Const MaxLoginAttempts As Integer = 3
-    Private Const LockoutDuration As TimeSpan = TimeSpan.FromMinutes(15)
+    Private ReadOnly LockoutDuration As TimeSpan = TimeSpan.FromMinutes(15)
     Private lockoutEndTime As DateTime = DateTime.MinValue
 
     Private Sub OK_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OK.Click
@@ -37,16 +37,16 @@ Public Class Login
                 loginAttempts = 0
                 
                 ' Show appropriate welcome message and navigate to correct form
-                Select Case cmbUser.Text.ToLower()
-                    Case "cashier"
+                Select Case cmbUser.Text
+                    Case "Cashier"
                         MessageBox.Show("Welcome, Cashier!", "Successful Login!", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         Me.Hide()
                         LoggedIn.Show()
-                    Case "manager"
+                    Case "Manager"
                         MessageBox.Show("Welcome, Manager!", "Successful Login!", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         Me.Hide()
                         LoggedIn.Show()
-                    Case "supervisor"
+                    Case "Supervisor"
                         MessageBox.Show("Welcome, Boss!", "Successful VIP Login!", MessageBoxButtons.OK, MessageBoxIcon.Information)
                         Me.Hide()
                         Supervisor.Show()
@@ -95,6 +95,16 @@ Public Class Login
         cmbUser.Items.Add("Manager")
         cmbUser.Items.Add("Supervisor")
         
+        ' Check if database needs setup
+        If Not DatabaseSetup.CheckUsersTable() Then
+            btnSetup.Visible = True
+            btnSetup.Text = "Setup Database First"
+            MessageBox.Show("Database setup required. Please click 'Setup Database First' to initialize the Users table.", 
+                          "Database Setup Required", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Else
+            btnSetup.Visible = False
+        End If
+        
         ' Set focus to account type
         cmbUser.Focus()
     End Sub
@@ -113,5 +123,16 @@ Public Class Login
             e.Handled = True
             txtPassword.Focus()
         End If
+    End Sub
+
+    Private Sub btnSetup_Click(sender As Object, e As EventArgs) Handles btnSetup.Click
+        Try
+            DatabaseSetup.SetupUsersTable()
+            btnSetup.Visible = False
+            MessageBox.Show("Database setup completed! You can now log in with password '1207' for any account type.", 
+                          "Setup Complete", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Exception
+            MessageBox.Show($"Error setting up database: {ex.Message}", "Setup Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
 End Class
