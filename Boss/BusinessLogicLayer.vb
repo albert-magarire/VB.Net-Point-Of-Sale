@@ -7,6 +7,8 @@ Imports System.Text
 ''' Contains business rules and validation logic
 ''' </summary>
 Public Class BusinessLogicLayer
+    Private Shared ReadOnly MaxLoginAttempts As Integer = 3
+    Private Shared ReadOnly LockoutMinutes As Integer = 15
     
     ''' <summary>
     ''' Authenticates a user with proper validation
@@ -27,15 +29,39 @@ Public Class BusinessLogicLayer
                 Return New AuthenticationResult(False, passwordValidation.ErrorMessage, Nothing)
             End If
             
+            ' Check persistent lockout
+            Dim lockoutUntil = DataAccessLayer.GetLockoutUntil(accountType)
+            If lockoutUntil.HasValue AndAlso DateTime.Now < lockoutUntil.Value Then
+                Dim remaining As TimeSpan = lockoutUntil.Value - DateTime.Now
+                Return New AuthenticationResult(False, $"Account locked. Try again in {Math.Max(0, remaining.Minutes)}m {Math.Max(0, remaining.Seconds)}s.", Nothing)
+            End If
+
             ' Validate credentials against database
             If DataAccessLayer.ValidateUser(accountType, password) Then
+                DataAccessLayer.RegisterSuccessfulLogin(accountType)
+                AuditLogger.Log("login_success", accountType, "Successful login")
                 Dim userInfo As New UserInfo With {
                     .AccountType = accountType,
                     .LoginTime = DateTime.Now
                 }
                 Return New AuthenticationResult(True, "Authentication successful", userInfo)
             Else
-                Return New AuthenticationResult(False, "Invalid credentials", Nothing)
+                Dim attempts = DataAccessLayer.RegisterFailedLogin(accountType, MaxLoginAttempts, LockoutMinutes)
+                Dim msg As String
+                If attempts >= MaxLoginAttempts Then
+                    Dim until = DataAccessLayer.GetLockoutUntil(accountType)
+                    If until.HasValue Then
+                        Dim remaining As TimeSpan = until.Value - DateTime.Now
+                        msg = $"Too many failed attempts. Locked for {LockoutMinutes} minutes (remaining {Math.Max(0, remaining.Minutes)}m {Math.Max(0, remaining.Seconds)}s)."
+                    Else
+                        msg = "Too many failed attempts. Account locked."
+                    End If
+                Else
+                    Dim remainingAttempts As Integer = Math.Max(0, MaxLoginAttempts - attempts)
+                    msg = $"Invalid credentials. {remainingAttempts} attempt(s) remaining."
+                End If
+                AuditLogger.Log("login_failure", accountType, msg)
+                Return New AuthenticationResult(False, msg, Nothing)
             End If
             
         Catch ex As DataAccessException

@@ -1,4 +1,4 @@
-﻿Imports System.Data.OleDb
+Imports System.Data.OleDb
 
 Public Class Login
     Private loginAttempts As Integer = 0
@@ -8,9 +8,10 @@ Public Class Login
 
     Private Sub OK_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OK.Click
         Try
-            ' Check if account is locked out
-            If DateTime.Now < lockoutEndTime Then
-                Dim remainingTime As TimeSpan = lockoutEndTime - DateTime.Now
+            ' Persistent lockout check is handled in BLL; keep local guard for UX
+            Dim persistedLock = DataAccessLayer.GetLockoutUntil(cmbUser.Text)
+            If persistedLock.HasValue AndAlso DateTime.Now < persistedLock.Value Then
+                Dim remainingTime As TimeSpan = persistedLock.Value - DateTime.Now
                 MessageBox.Show($"Account is locked out. Please try again in {remainingTime.Minutes} minutes and {remainingTime.Seconds} seconds.", 
                               "Account Locked", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 Return
@@ -35,6 +36,7 @@ Public Class Login
             If authResult.IsSuccess Then
                 ' Reset login attempts on successful login
                 loginAttempts = 0
+                AuditLogger.Log("login", cmbUser.Text, "login_success_ui")
                 
                 ' Show appropriate welcome message and navigate to correct form
                 Select Case cmbUser.Text
@@ -59,15 +61,9 @@ Public Class Login
                 ' Handle failed authentication
                 loginAttempts += 1
                 
-                If loginAttempts >= MaxLoginAttempts Then
-                    lockoutEndTime = DateTime.Now.Add(LockoutDuration)
-                    MessageBox.Show($"Too many failed login attempts. Account locked for {LockoutDuration.Minutes} minutes.", 
-                                  "Account Locked", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Else
-                    Dim remainingAttempts As Integer = MaxLoginAttempts - loginAttempts
-                    MessageBox.Show($"Invalid login credentials. {remainingAttempts} attempts remaining.", 
-                                  "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                End If
+                ' Message already precise from BLL; just show it
+                MessageBox.Show(authResult.Message, "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                AuditLogger.Log("login", cmbUser.Text, "login_failure_ui")
                 
                 ' Clear password field for security
                 txtPassword.Clear()
