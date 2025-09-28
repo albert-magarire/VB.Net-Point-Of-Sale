@@ -10,6 +10,8 @@ Imports System.Text
 Public Class DataAccessLayer
     Private Shared ReadOnly ConnectionString As String = My.Settings.BossConnectionString
     Private Shared ReadOnly MaxRetryAttempts As Integer = 3
+    Private Shared ReadOnly PasswordHashIterations As Integer = 20000
+    Private Shared ReadOnly PasswordSaltSize As Integer = 16
 
     ''' <summary>
     ''' Creates a new database connection with proper error handling
@@ -111,37 +113,220 @@ Public Class DataAccessLayer
     End Function
 
     ''' <summary>
-    ''' Validates user credentials securely
+    ''' Validates user credentials with salted-hash (migrates plaintext to hashed format on first success)
     ''' </summary>
-    ''' <param name="accountType">User account type</param>
-    ''' <param name="password">Plain text password</param>
-    ''' <returns>True if credentials are valid</returns>
     Public Shared Function ValidateUser(accountType As String, password As String) As Boolean
         Try
-            Dim query As String = "SELECT COUNT(*) FROM Users WHERE AccType = @AccType AND Passcode = @Passcode"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@AccType", accountType},
-                {"@Passcode", password} ' Using plain text password for now
+            EnsureSecurityTables()
+
+            Dim getPassQuery As String = "SELECT Passcode FROM Users WHERE AccType = @AccType"
+            Dim passParams As New Dictionary(Of String, Object) From {
+                {"@AccType", accountType}
             }
-            
-            Dim result As Object = ExecuteScalar(query, parameters)
-            Return Convert.ToInt32(result) > 0
+
+            Dim stored As Object = ExecuteScalar(getPassQuery, passParams)
+            If stored Is Nothing OrElse stored Is DBNull.Value Then
+                Return False
+            End If
+
+            Dim storedValue As String = stored.ToString()
+
+            Dim isMatch As Boolean
+            If storedValue.StartsWith("v1:") Then
+                isMatch = VerifyPassword(storedValue, password)
+            Else
+                ' Legacy plaintext compare
+                isMatch = String.Equals(storedValue, password)
+                If isMatch Then
+                    ' Migrate to salted-hash
+                    Dim migrated As String = HashPasswordWithSalt(password)
+                    Dim updQuery As String = "UPDATE Users SET Passcode = @Passcode WHERE AccType = @AccType"
+                    Dim updParams As New Dictionary(Of String, Object) From {
+                        {"@Passcode", migrated},
+                        {"@AccType", accountType}
+                    }
+                    ExecuteNonQuery(updQuery, updParams)
+                End If
+            End If
+
+            Return isMatch
         Catch ex As Exception
             Throw New DataAccessException("Failed to validate user credentials", ex)
         End Try
     End Function
 
     ''' <summary>
-    ''' Hashes a password using SHA256
+    ''' Creates salted PBKDF2 hash in storage format v1:base64salt:base64hash
     ''' </summary>
-    ''' <param name="password">Plain text password</param>
-    ''' <returns>Hashed password</returns>
-    Public Shared Function HashPassword(password As String) As String
-        Using sha256 As SHA256 = SHA256.Create()
-            Dim hashedBytes As Byte() = sha256.ComputeHash(Encoding.UTF8.GetBytes(password))
-            Return Convert.ToBase64String(hashedBytes)
+    Public Shared Function HashPasswordWithSalt(password As String) As String
+        Dim salt As Byte() = CreateRandomSalt(PasswordSaltSize)
+        Dim hash As Byte() = DerivePbkdf2(password, salt, PasswordHashIterations, 32)
+        Return $"v1:{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}"
+    End Function
+
+    Private Shared Function VerifyPassword(stored As String, password As String) As Boolean
+        Try
+            ' Format: v1:base64salt:base64hash
+            Dim parts = stored.Split({":"c}, StringSplitOptions.None)
+            If parts.Length <> 3 OrElse parts(0) <> "v1" Then Return False
+            Dim salt As Byte() = Convert.FromBase64String(parts(1))
+            Dim expected As Byte() = Convert.FromBase64String(parts(2))
+            Dim actual As Byte() = DerivePbkdf2(password, salt, PasswordHashIterations, expected.Length)
+            Return ConstantTimeEquals(expected, actual)
+        Catch
+            Return False
+        End Try
+    End Function
+
+    Private Shared Function CreateRandomSalt(length As Integer) As Byte()
+        Dim salt(length - 1) As Byte
+        Using rng As RandomNumberGenerator = RandomNumberGenerator.Create()
+            rng.GetBytes(salt)
+        End Using
+        Return salt
+    End Function
+
+    Private Shared Function DerivePbkdf2(password As String, salt As Byte(), iterations As Integer, length As Integer) As Byte()
+        Using kdf As New Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256)
+            Return kdf.GetBytes(length)
         End Using
     End Function
+
+    Private Shared Function ConstantTimeEquals(a As Byte(), b As Byte()) As Boolean
+        If a Is Nothing OrElse b Is Nothing OrElse a.Length <> b.Length Then Return False
+        Dim diff As Integer = 0
+        For i As Integer = 0 To a.Length - 1
+            diff = diff Or (a(i) Xor b(i))
+        Next
+        Return diff = 0
+    End Function
+
+    ''' <summary>
+    ''' Ensure security-related tables exist (AuditLog, AuthState)
+    ''' </summary>
+    Public Shared Sub EnsureSecurityTables()
+        Try
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                ' Create AuditLog table
+                Try
+                    Dim createAudit As String = "CREATE TABLE AuditLog (Id COUNTER PRIMARY KEY, EventType TEXT(50), AccType TEXT(50), Details TEXT(255), CreatedAt DATETIME)"
+                    Using cmd As New OleDbCommand(createAudit, conn)
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Catch
+                    ' ignore if exists
+                End Try
+
+                ' Create AuthState table
+                Try
+                    Dim createState As String = "CREATE TABLE AuthState (AccType TEXT(50), FailedAttempts INTEGER, LockoutUntil DATETIME)"
+                    Using cmd As New OleDbCommand(createState, conn)
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Catch
+                    ' ignore if exists
+                End Try
+            End Using
+        Catch
+            ' ignore
+        End Try
+    End Sub
+
+    Public Shared Function GetLockoutUntil(accountType As String) As Nullable(Of DateTime)
+        Try
+            Dim q As String = "SELECT LockoutUntil FROM AuthState WHERE AccType = @AccType"
+            Dim p As New Dictionary(Of String, Object) From {{"@AccType", accountType}}
+            Dim obj = ExecuteScalar(q, p)
+            If obj Is Nothing OrElse obj Is DBNull.Value Then Return Nothing
+            Dim dt As DateTime
+            If DateTime.TryParse(obj.ToString(), dt) Then
+                Return dt
+            End If
+            Return Nothing
+        Catch
+            Return Nothing
+        End Try
+    End Function
+
+    Public Shared Function RegisterFailedLogin(accountType As String, maxAttempts As Integer, lockoutMinutes As Integer) As Integer
+        EnsureSecurityTables()
+        Dim currentAttempts As Integer = 0
+        Dim exists As Boolean = False
+        Using conn As New OleDbConnection(ConnectionString)
+            conn.Open()
+            ' Read current
+            Using sel As New OleDbCommand("SELECT FailedAttempts, LockoutUntil FROM AuthState WHERE AccType = @AccType", conn)
+                sel.Parameters.AddWithValue("@AccType", accountType)
+                Using r = sel.ExecuteReader()
+                    If r.Read() Then
+                        exists = True
+                        currentAttempts = If(IsDBNull(r(0)), 0, Convert.ToInt32(r(0)))
+                        Dim lockUntil As DateTime = If(IsDBNull(r(1)), Date.MinValue, Convert.ToDateTime(r(1)))
+                        If lockUntil > DateTime.Now Then
+                            ' still locked; keep attempts as is
+                        End If
+                    End If
+                End Using
+            End Using
+
+            currentAttempts += 1
+            Dim newLockout As Object = DBNull.Value
+            If currentAttempts >= maxAttempts Then
+                newLockout = DateTime.Now.AddMinutes(lockoutMinutes)
+            End If
+
+            If exists Then
+                Using upd As New OleDbCommand("UPDATE AuthState SET FailedAttempts = @FA, LockoutUntil = @LU WHERE AccType = @AccType", conn)
+                    upd.Parameters.AddWithValue("@FA", currentAttempts)
+                    If TypeOf newLockout Is DateTime Then
+                        upd.Parameters.AddWithValue("@LU", CType(newLockout, DateTime))
+                    Else
+                        upd.Parameters.AddWithValue("@LU", DBNull.Value)
+                    End If
+                    upd.Parameters.AddWithValue("@AccType", accountType)
+                    upd.ExecuteNonQuery()
+                End Using
+            Else
+                Using ins As New OleDbCommand("INSERT INTO AuthState (AccType, FailedAttempts, LockoutUntil) VALUES (@AccType, @FA, @LU)", conn)
+                    ins.Parameters.AddWithValue("@AccType", accountType)
+                    ins.Parameters.AddWithValue("@FA", currentAttempts)
+                    If TypeOf newLockout Is DateTime Then
+                        ins.Parameters.AddWithValue("@LU", CType(newLockout, DateTime))
+                    Else
+                        ins.Parameters.AddWithValue("@LU", DBNull.Value)
+                    End If
+                    ins.ExecuteNonQuery()
+                End Using
+            End If
+        End Using
+        Return currentAttempts
+    End Function
+
+    Public Shared Sub RegisterSuccessfulLogin(accountType As String)
+        EnsureSecurityTables()
+        Using conn As New OleDbConnection(ConnectionString)
+            conn.Open()
+            Dim exists As Boolean = False
+            Using sel As New OleDbCommand("SELECT AccType FROM AuthState WHERE AccType = @AccType", conn)
+                sel.Parameters.AddWithValue("@AccType", accountType)
+                Using r = sel.ExecuteReader()
+                    exists = r.Read()
+                End Using
+            End Using
+            If exists Then
+                Using upd As New OleDbCommand("UPDATE AuthState SET FailedAttempts = 0, LockoutUntil = NULL WHERE AccType = @AccType", conn)
+                    upd.Parameters.AddWithValue("@AccType", accountType)
+                    upd.ExecuteNonQuery()
+                End Using
+            Else
+                Using ins As New OleDbCommand("INSERT INTO AuthState (AccType, FailedAttempts, LockoutUntil) VALUES (@AccType, 0, NULL)", conn)
+                    ins.Parameters.AddWithValue("@AccType", accountType)
+                    ins.ExecuteNonQuery()
+                End Using
+            End If
+        End Using
+    End Sub
 
     ''' <summary>
     ''' Gets daily totals for a specific date

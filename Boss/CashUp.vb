@@ -17,7 +17,8 @@ Public Class CashUp
     Private Sub CashUp_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         'TODO: This line of code loads data into the 'BossDataSet.Totals' table. You can move, or remove it, as needed.
         Me.TotalsTableAdapter.Fill(Me.BossDataSet.Totals)
-        If Login.txtPassword.Text = "hebi0800" Then 'Access to edit the supervisor file
+        ' Remove password hardcoding; restrict to Supervisor role only via navigation
+        If Login.cmbUser.Text = "Supervisor" Then
             rtfCashUp.Enabled = True
             btnReset.Visible = True
         Else
@@ -48,6 +49,7 @@ Public Class CashUp
             Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
             sql.ExecuteNonQuery()
             MsgBox("Receipt Totals Cleared")
+            AuditLogger.Log("cashup_reset", "Supervisor", "Totals cleared")
         Catch ex As Exception
             MessageBox.Show(ex.Message)
 
@@ -62,6 +64,7 @@ Public Class CashUp
             Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
             sql.ExecuteNonQuery()
             MsgBox("Sales By Invoice Cleared")
+            AuditLogger.Log("cashup_reset", "Supervisor", "Sales cleared")
         Catch ex As Exception
             MessageBox.Show(ex.Message)
 
@@ -89,6 +92,7 @@ Public Class CashUp
                 End Using
             End Using
             MsgBox("Daily Total Reset")
+            AuditLogger.Log("cashup_reset", "Supervisor", $"DTotals reset for {Today.Date:yyyy-MM-dd}")
             Me.Controls.Clear()
             InitializeComponent()
             CashUp_Load(e, e)

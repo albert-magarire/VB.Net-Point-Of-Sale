@@ -452,6 +452,7 @@ Public Class Entries
             ResetForNextSale()
 
             MessageBox.Show($"Sales Invoice number {currentReceiptNumber} successfully processed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            AuditLogger.Log("sale", "Cashier", $"receipt={currentReceiptNumber}; items={productCount}; total={runningTotal}")
 
         Catch ex As BusinessLogicException
             MessageBox.Show($"Payment processing error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
