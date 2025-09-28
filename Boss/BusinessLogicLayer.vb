@@ -1,5 +1,6 @@
 Imports System.Collections.Generic
 Imports System.Linq
+Imports System.Text
 
 ''' <summary>
 ''' Business logic layer for the Boss Cafe POS system
@@ -198,6 +199,69 @@ Public Class BusinessLogicLayer
         Catch ex As DataAccessException
             Throw New BusinessLogicException("Failed to generate receipt number: " & ex.Message, ex)
         End Try
+    End Function
+    
+    ''' <summary>
+    ''' Retrieves a product by code
+    ''' </summary>
+    Public Shared Function GetProductByCode(code As String) As ProductData
+        If String.IsNullOrWhiteSpace(code) Then
+            Return Nothing
+        End If
+        Try
+            Return DataAccessLayer.GetProductByCode(code)
+        Catch ex As DataAccessException
+            Throw New BusinessLogicException("Failed to retrieve product: " & ex.Message, ex)
+        End Try
+    End Function
+
+    ''' <summary>
+    ''' Gets aggregated sales summary for a date
+    ''' </summary>
+    Public Shared Function GetSalesSummary(targetDate As DateTime) As SalesSummaryData
+        Try
+            Return DataAccessLayer.GetSalesSummary(targetDate)
+        Catch ex As DataAccessException
+            Throw New BusinessLogicException("Failed to get sales summary: " & ex.Message, ex)
+        End Try
+    End Function
+
+    ''' <summary>
+    ''' Gets totals per waiter for a date
+    ''' </summary>
+    Public Shared Function GetWaiterTotals(targetDate As DateTime) As List(Of WaiterTotalData)
+        Try
+            Return DataAccessLayer.GetWaiterTotals(targetDate)
+        Catch ex As DataAccessException
+            Throw New BusinessLogicException("Failed to get waiter totals: " & ex.Message, ex)
+        End Try
+    End Function
+
+    ''' <summary>
+    ''' Generates a text EOD report for the given date
+    ''' </summary>
+    Public Shared Function GenerateEODReport(targetDate As DateTime) As String
+        Dim sb As New StringBuilder()
+        Dim daily = DataAccessLayer.GetDailyTotals(targetDate)
+        Dim summary = DataAccessLayer.GetSalesSummary(targetDate)
+        Dim waiterTotals = DataAccessLayer.GetWaiterTotals(targetDate)
+
+        sb.AppendLine("BOSS CAFE - END OF DAY REPORT")
+        sb.AppendLine(targetDate.ToLongDateString())
+        sb.AppendLine(New String("-"c, 64))
+        sb.AppendLine($"Receipts: {summary.NumReceipts}")
+        sb.AppendLine($"Items Sold: {summary.NumItems}")
+        sb.AppendLine($"USD Total: {daily.UTotal:F2}")
+        sb.AppendLine($"ZWL Total: {daily.ZTotal:F2}")
+        sb.AppendLine()
+        sb.AppendLine("By Waiter:")
+        For Each wt In waiterTotals
+            sb.AppendLine($" - {wt.Waiter}: USD {wt.TotalUSD:F2} | ZWL {wt.TotalZWL:F2}")
+        Next
+        sb.AppendLine(New String("-"c, 64))
+        sb.AppendLine("Generated: " & DateTime.Now.ToString("G"))
+
+        Return sb.ToString()
     End Function
     
     ''' <summary>

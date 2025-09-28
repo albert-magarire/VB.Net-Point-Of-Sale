@@ -1,4 +1,4 @@
-﻿Imports System.Data.OleDb
+Imports System.Data.OleDb
 Public Class CashUp
 
     Private Sub btnBack_Click(sender As Object, e As EventArgs) Handles btnBack.Click
@@ -80,14 +80,14 @@ Public Class CashUp
 
         End Try
         Try
-            Dim sqlconn As New OleDb.OleDbConnection
-            Dim connstring, command As String
-            connstring = My.Settings.BossConnectionString
-            sqlconn.ConnectionString = connstring
-            sqlconn.Open()
-            command = "DELETE * FROM DTotals WHERE TDate = '" & Today & "'"
-            Dim sql As OleDbCommand = New OleDbCommand(command, sqlconn)
-            sql.ExecuteNonQuery()
+            Using sqlconn As New OleDb.OleDbConnection(My.Settings.BossConnectionString)
+                sqlconn.Open()
+                Dim command As String = "DELETE * FROM DTotals WHERE TDate = @Date"
+                Using sql As New OleDbCommand(command, sqlconn)
+                    sql.Parameters.AddWithValue("@Date", Today.Date)
+                    sql.ExecuteNonQuery()
+                End Using
+            End Using
             MsgBox("Daily Total Reset")
             Me.Controls.Clear()
             InitializeComponent()
