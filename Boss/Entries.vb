@@ -1,4 +1,4 @@
-﻿Imports System.Data.OleDb
+Imports System.Data.OleDb
 Imports System.Collections.Generic
 
 Public Class Entries
@@ -42,7 +42,7 @@ Public Class Entries
     Private Sub Entries_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
             ' Initialize timers
-            Timer3.Start()
+            Timer3.Stop()
 
             ' Load daily totals using business logic layer
             dailyTotals = BusinessLogicLayer.CalculateDailyTotals(DateTime.Today)
@@ -504,7 +504,7 @@ Public Class Entries
                 dailyTotals.ZTotal += runningTotal
             End If
 
-            dailyTotals.ReceiptCount = Convert.ToInt32(currentReceiptNumber)
+            dailyTotals.ReceiptCount += 1
             BusinessLogicLayer.UpdateDailyTotals(dailyTotals)
 
             ' Update display
@@ -613,16 +613,12 @@ Public Class Entries
         runningTotal = 0
 
         For Each saleItem As SaleData In currentSale
-            ' Get the product from database to get both USD and ZWD prices
-            Dim products = BusinessLogicLayer.GetProductsByCategory("") ' Get all products
-            Dim product = products.FirstOrDefault(Function(p) p.Code = saleItem.Code)
-
+            Dim product = BusinessLogicLayer.GetProductByCode(saleItem.Code)
             If product IsNot Nothing Then
                 saleItem.Price = If(isUSD, product.USD, product.ZWL)
                 saleItem.Total = saleItem.Quantity * saleItem.Price
                 saleItem.Currency = If(isUSD, "USD", "ZWD")
             End If
-
             runningTotal += saleItem.Total
         Next
 
@@ -686,14 +682,23 @@ Public Class Entries
     End Sub
 
     Private Shadows Sub remove_Click(sender As Object, e As EventArgs) Handles remove.Click
+        ' Visually undo last text entry
         rtfReceipt.Undo()
         rtfReceiptB.Undo()
         rtfReceiptC.Undo()
         EOD.rtfReceipt.Undo()
-        If cusd = True Then
-            rtotal = rtotal - total
-        Else
-            rtotal = rtotal - zwdtotal
+
+        ' Remove last item from the current sale and recompute totals
+        If currentSale.Count > 0 Then
+            Dim last As SaleData = currentSale(currentSale.Count - 1)
+            currentSale.RemoveAt(currentSale.Count - 1)
+            productCount = Math.Max(0, productCount - last.Quantity)
+
+            runningTotal = 0
+            For Each s In currentSale
+                runningTotal += s.Total
+            Next
+            UpdateTotalsDisplay()
         End If
     End Sub
 
@@ -706,8 +711,7 @@ Public Class Entries
     End Sub
 
     Private Sub Timer3_Tick(sender As Object, e As EventArgs) Handles Timer3.Tick
-        lblZTotal.Text = rtotal.ToString()
-        lblTotal.Text = rtotal.ToString() & ".00"
+        Timer3.Stop()
     End Sub
 
     Private Sub fish_Click(sender As Object, e As EventArgs) Handles fish.Click

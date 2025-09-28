@@ -45,7 +45,7 @@ Public Class DataAccessLayer
                 Next
             End If
             
-            Return command.ExecuteReader()
+            Return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
         Catch ex As Exception
             If connection IsNot Nothing Then connection.Close()
             Throw New DataAccessException("Failed to execute query: " & query, ex)
@@ -159,8 +159,8 @@ Public Class DataAccessLayer
                 If reader.Read() Then
                     Return New DailyTotalsData With {
                         .[Date] = Convert.ToDateTime(reader("TDate")),
-                        .ZTotal = If(IsDBNull(reader("ZTotal")), 0, Convert.ToInt32(reader("ZTotal"))),
-                        .UTotal = If(IsDBNull(reader("UTotal")), 0, Convert.ToInt32(reader("UTotal"))),
+                        .ZTotal = If(IsDBNull(reader("ZTotal")), 0D, Convert.ToDecimal(reader("ZTotal"))),
+                        .UTotal = If(IsDBNull(reader("UTotal")), 0D, Convert.ToDecimal(reader("UTotal"))),
                         .ReceiptCount = If(IsDBNull(reader("NoR")), 0, Convert.ToInt32(reader("NoR")))
                     }
                 Else
@@ -191,7 +191,17 @@ Public Class DataAccessLayer
                 {"@Date", dailyTotals.[Date]}
             }
             
-            ExecuteNonQuery(query, parameters)
+            Dim rowsAffected As Integer = ExecuteNonQuery(query, parameters)
+            If rowsAffected = 0 Then
+                Dim insertQuery As String = "INSERT INTO DTotals (TDate, ZTotal, UTotal, NoR) VALUES (@Date, @ZTotal, @UTotal, @NoR)"
+                Dim insertParams As New Dictionary(Of String, Object) From {
+                    {"@Date", dailyTotals.[Date]},
+                    {"@ZTotal", dailyTotals.ZTotal},
+                    {"@UTotal", dailyTotals.UTotal},
+                    {"@NoR", dailyTotals.ReceiptCount}
+                }
+                ExecuteNonQuery(insertQuery, insertParams)
+            End If
         Catch ex As Exception
             Throw New DataAccessException("Failed to update daily totals", ex)
         End Try
@@ -253,6 +263,112 @@ Public Class DataAccessLayer
         
         Return products
     End Function
+    
+    ' Gets a single product by code
+    Public Shared Function GetProductByCode(code As String) As ProductData
+        Try
+            Dim query As String = "SELECT Code, Description, Category, ZWL, USD FROM Products WHERE Code = @Code"
+            Dim parameters As New Dictionary(Of String, Object) From {
+                {"@Code", code}
+            }
+
+            Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
+                If reader.Read() Then
+                    Return New ProductData With {
+                        .Code = reader("Code").ToString(),
+                        .Description = If(IsDBNull(reader("Description")), "", reader("Description").ToString()),
+                        .Category = If(IsDBNull(reader("Category")), "", reader("Category").ToString()),
+                        .ZWL = If(IsDBNull(reader("ZWL")), 0D, Convert.ToDecimal(reader("ZWL"))),
+                        .USD = If(IsDBNull(reader("USD")), 0D, Convert.ToDecimal(reader("USD")))
+                    }
+                End If
+            End Using
+
+            Return Nothing
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to get product by code", ex)
+        End Try
+    End Function
+
+    ' Sales summary for EOD
+    Public Shared Function GetSalesSummary(targetDate As DateTime) As SalesSummaryData
+        Dim summary As New SalesSummaryData With {
+            .[Date] = targetDate.Date,
+            .TotalUSD = 0D,
+            .TotalZWL = 0D,
+            .NumItems = 0,
+            .NumReceipts = 0
+        }
+
+        Try
+            Dim totalsQuery As String = "SELECT SUM(IIf(Currency='USD', Total, 0)) AS TotalUSD, SUM(IIf(Currency<>'USD', Total, 0)) AS TotalZWL, SUM(Quantity) AS NumItems FROM Sales WHERE Date = @Date"
+            Dim parameters As New Dictionary(Of String, Object) From {
+                {"@Date", targetDate.Date}
+            }
+
+            Using reader As OleDbDataReader = ExecuteQuery(totalsQuery, parameters)
+                If reader.Read() Then
+                    summary.TotalUSD = If(IsDBNull(reader("TotalUSD")), 0D, Convert.ToDecimal(reader("TotalUSD")))
+                    summary.TotalZWL = If(IsDBNull(reader("TotalZWL")), 0D, Convert.ToDecimal(reader("TotalZWL")))
+                    summary.NumItems = If(IsDBNull(reader("NumItems")), 0, Convert.ToInt32(reader("NumItems")))
+                End If
+            End Using
+
+            Dim receiptsQuery As String = "SELECT Receipt FROM Sales WHERE Date = @Date GROUP BY Receipt"
+            Using reader As OleDbDataReader = ExecuteQuery(receiptsQuery, parameters)
+                Dim count As Integer = 0
+                While reader.Read()
+                    count += 1
+                End While
+                summary.NumReceipts = count
+            End Using
+
+            Return summary
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to get sales summary", ex)
+        End Try
+    End Function
+
+    ' Totals per waiter for EOD
+    Public Shared Function GetWaiterTotals(targetDate As DateTime) As List(Of WaiterTotalData)
+        Dim results As New List(Of WaiterTotalData)
+        Try
+            Dim query As String = "SELECT Waiter, SUM(IIf(Currency='USD', Total, 0)) AS TotalUSD, SUM(IIf(Currency<>'USD', Total, 0)) AS TotalZWL FROM Sales WHERE Date = @Date GROUP BY Waiter"
+            Dim parameters As New Dictionary(Of String, Object) From {
+                {"@Date", targetDate.Date}
+            }
+
+            Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
+                While reader.Read()
+                    results.Add(New WaiterTotalData With {
+                        .Waiter = If(IsDBNull(reader("Waiter")), "", reader("Waiter").ToString()),
+                        .TotalUSD = If(IsDBNull(reader("TotalUSD")), 0D, Convert.ToDecimal(reader("TotalUSD"))),
+                        .TotalZWL = If(IsDBNull(reader("TotalZWL")), 0D, Convert.ToDecimal(reader("TotalZWL")))
+                    })
+                End While
+            End Using
+
+            Return results
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to get waiter totals", ex)
+        End Try
+    End Function
+End Class
+
+' Data structure for sales summary
+Public Class SalesSummaryData
+    Public Property [Date] As DateTime
+    Public Property TotalUSD As Decimal
+    Public Property TotalZWL As Decimal
+    Public Property NumItems As Integer
+    Public Property NumReceipts As Integer
+End Class
+
+' Data structure for waiter totals
+Public Class WaiterTotalData
+    Public Property Waiter As String
+    Public Property TotalUSD As Decimal
+    Public Property TotalZWL As Decimal
 End Class
 
 ''' <summary>

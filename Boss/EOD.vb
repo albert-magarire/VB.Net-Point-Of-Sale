@@ -1,4 +1,4 @@
-﻿Public Class EOD
+Public Class EOD
 
     Private Sub btnBack_Click(sender As Object, e As EventArgs) Handles btnBack.Click
         Me.Hide()
@@ -14,10 +14,14 @@
     End Sub
 
     Private Sub EOD_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        If Login.txtPassword.Text = "hebi0800" Then
-            rtfReceipt.Enabled = True
-        Else
-            rtfReceipt.Enabled = False
-        End If
+        rtfReceipt.Enabled = (Login.txtPassword.Text = "hebi0800")
+
+        ' Auto-generate today's EOD report
+        Try
+            Dim reportText As String = BusinessLogicLayer.GenerateEODReport(DateTime.Today)
+            rtfReceipt.Text = reportText
+        Catch ex As Exception
+            rtfReceipt.Text = "Failed to generate EOD report: " & ex.Message
+        End Try
     End Sub
 End Class
