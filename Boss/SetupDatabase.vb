@@ -55,20 +55,20 @@ Public Class SetupDatabase
                 ' Insert default users with password 1207 (plain text for now)
                 Dim insertQuery As String = "INSERT INTO Users (AccType, Passcode) VALUES (?, ?)"
                 Using command As New OleDbCommand(insertQuery, connection)
-                    command.Parameters.AddWithValue("@AccType", "Cashier")
-                    command.Parameters.AddWithValue("@Passcode", "1207")
+                    command.Parameters.AddWithValue("?", "Cashier")
+                    command.Parameters.AddWithValue("?", "1207")
                     command.ExecuteNonQuery()
                     Console.WriteLine("Added Cashier user")
-                    
+
                     command.Parameters.Clear()
-                    command.Parameters.AddWithValue("@AccType", "Manager")
-                    command.Parameters.AddWithValue("@Passcode", "1207")
+                    command.Parameters.AddWithValue("?", "Manager")
+                    command.Parameters.AddWithValue("?", "1207")
                     command.ExecuteNonQuery()
                     Console.WriteLine("Added Manager user")
-                    
+
                     command.Parameters.Clear()
-                    command.Parameters.AddWithValue("@AccType", "Supervisor")
-                    command.Parameters.AddWithValue("@Passcode", "1207")
+                    command.Parameters.AddWithValue("?", "Supervisor")
+                    command.Parameters.AddWithValue("?", "1207")
                     command.ExecuteNonQuery()
                     Console.WriteLine("Added Supervisor user")
                 End Using

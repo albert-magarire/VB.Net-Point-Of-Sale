@@ -12,15 +12,28 @@ Public Class Menu
 
     Private Sub Menu_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
-            ' Load products data
-            Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
-            
             ' Initialize form
             InitializeForm()
-            
+
+            ' Load products data
+            RefreshData()
         Catch ex As Exception
             MessageBox.Show($"Error loading form: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
+    End Sub
+
+    Private Sub Menu_Activated(sender As Object, e As EventArgs) Handles MyBase.Activated
+        ' Refresh data every time the form becomes active
+        Try
+            RefreshData()
+        Catch ex As Exception
+            ' Ignore errors on reactivation
+        End Try
+    End Sub
+
+    Private Sub RefreshData()
+        Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
+        ProductsDataGridView.Refresh()
     End Sub
 
     Private Sub InitializeForm()
@@ -83,16 +96,18 @@ Public Class Menu
                 Return
             End If
 
-            ' Save using data access layer
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Code", product.Code},
-                {"@Description", product.Description},
-                {"@Category", product.Category},
-                {"@ZWL", product.ZWL},
-                {"@USD", product.USD}
-            }
-
-            DataAccessLayer.ExecuteNonQuery("INSERT INTO Products (Code, Description, Category, ZWL, USD) VALUES (@Code, @Description, @Category, @ZWL, @USD)", parameters)
+            ' Save using direct OleDb with positional parameters
+            Using conn As New System.Data.OleDb.OleDbConnection(My.Settings.BossConnectionString)
+                conn.Open()
+                Using cmd As New System.Data.OleDb.OleDbCommand("INSERT INTO Products ([Code], [Description], [Category], [ZWL], [USD]) VALUES (?, ?, ?, ?, ?)", conn)
+                    cmd.Parameters.AddWithValue("?", product.Code)
+                    cmd.Parameters.AddWithValue("?", product.Description)
+                    cmd.Parameters.AddWithValue("?", product.Category)
+                    cmd.Parameters.AddWithValue("?", product.ZWL)
+                    cmd.Parameters.AddWithValue("?", product.USD)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
 
             ' Refresh data
             Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
@@ -168,16 +183,18 @@ Public Class Menu
             ' Get selected product code
             Dim selectedCode As String = ProductsDataGridView.SelectedRows(0).Cells("Code").Value.ToString()
 
-            ' Update product
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Description", DescriptionTextBox.Text.Trim()},
-                {"@Category", CategoryTextBox.Text.Trim()},
-                {"@ZWL", Convert.ToDecimal(ZWLTextBox.Text)},
-                {"@USD", Convert.ToDecimal(USDTextBox.Text)},
-                {"@Code", selectedCode}
-            }
-
-            DataAccessLayer.ExecuteNonQuery("UPDATE Products SET Description = @Description, Category = @Category, ZWL = @ZWL, USD = @USD WHERE Code = @Code", parameters)
+            ' Update product with positional parameters
+            Using conn As New System.Data.OleDb.OleDbConnection(My.Settings.BossConnectionString)
+                conn.Open()
+                Using cmd As New System.Data.OleDb.OleDbCommand("UPDATE Products SET [Description] = ?, [Category] = ?, [ZWL] = ?, [USD] = ? WHERE [Code] = ?", conn)
+                    cmd.Parameters.AddWithValue("?", DescriptionTextBox.Text.Trim())
+                    cmd.Parameters.AddWithValue("?", CategoryTextBox.Text.Trim())
+                    cmd.Parameters.AddWithValue("?", Convert.ToDecimal(ZWLTextBox.Text))
+                    cmd.Parameters.AddWithValue("?", Convert.ToDecimal(USDTextBox.Text))
+                    cmd.Parameters.AddWithValue("?", selectedCode)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
 
             ' Refresh data
             Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
@@ -207,12 +224,14 @@ Public Class Menu
                 Return
             End If
 
-            ' Delete product
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Code", selectedCode}
-            }
-
-            DataAccessLayer.ExecuteNonQuery("DELETE FROM Products WHERE Code = @Code", parameters)
+            ' Delete product with positional parameter
+            Using conn As New System.Data.OleDb.OleDbConnection(My.Settings.BossConnectionString)
+                conn.Open()
+                Using cmd As New System.Data.OleDb.OleDbCommand("DELETE FROM Products WHERE [Code] = ?", conn)
+                    cmd.Parameters.AddWithValue("?", selectedCode)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
 
             ' Refresh data
             Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
@@ -252,18 +271,15 @@ Public Class Menu
         CodeTextBox.Focus()
     End Sub
 
-    Private Sub ProductsDataGridView_SelectionChanged(sender As Object, e As EventArgs) Handles ProductsDataGridView.SelectionChanged
+    Private Sub ProductsDataGridView_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles ProductsDataGridView.CellClick
+        ' TextBoxes are auto-populated via DataBindings to ProductsBindingSource
+        ' This handler ensures the row is fully selected on click
         Try
-            If ProductsDataGridView.SelectedRows.Count > 0 Then
-                Dim selectedRow = ProductsDataGridView.SelectedRows(0)
-                CodeTextBox.Text = selectedRow.Cells("Code").Value.ToString()
-                DescriptionTextBox.Text = selectedRow.Cells("Description").Value.ToString()
-                CategoryTextBox.Text = selectedRow.Cells("Category").Value.ToString()
-                ZWLTextBox.Text = selectedRow.Cells("ZWL").Value.ToString()
-                USDTextBox.Text = selectedRow.Cells("USD").Value.ToString()
+            If e.RowIndex >= 0 AndAlso ProductsDataGridView.Rows(e.RowIndex).Cells("Code").Value IsNot Nothing Then
+                ProductsDataGridView.Rows(e.RowIndex).Selected = True
             End If
         Catch ex As Exception
-            ' Ignore errors during selection change
+            ' Ignore
         End Try
     End Sub
 

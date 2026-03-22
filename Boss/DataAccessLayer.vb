@@ -1,204 +1,64 @@
 Imports System.Data.OleDb
 Imports System.Configuration
-Imports System.Security.Cryptography
 Imports System.Text
+Imports System.Text.RegularExpressions
 
 ''' <summary>
 ''' Centralized data access layer for the Boss Cafe POS system
-''' Provides secure database operations with proper error handling
+''' All queries use ? positional parameters for OleDb compatibility
 ''' </summary>
 Public Class DataAccessLayer
     Private Shared ReadOnly ConnectionString As String = My.Settings.BossConnectionString
-    Private Shared ReadOnly MaxRetryAttempts As Integer = 3
-    Private Shared ReadOnly PasswordHashIterations As Integer = 20000
-    Private Shared ReadOnly PasswordSaltSize As Integer = 16
 
     ''' <summary>
-    ''' Creates a new database connection with proper error handling
+    ''' Returns the resolved database file path from the connection string
     ''' </summary>
-    ''' <returns>OleDbConnection object</returns>
+    Public Shared Function GetDatabasePath() As String
+        Try
+            Dim builder As New OleDbConnectionStringBuilder(ConnectionString)
+            Dim source As String = builder.DataSource
+            ' Resolve |DataDirectory| to actual path
+            If source.Contains("|DataDirectory|") Then
+                Dim dataDir As String = AppDomain.CurrentDomain.GetData("DataDirectory")?.ToString()
+                If String.IsNullOrEmpty(dataDir) Then
+                    dataDir = AppDomain.CurrentDomain.BaseDirectory
+                End If
+                source = source.Replace("|DataDirectory|", dataDir)
+            End If
+            Return System.IO.Path.GetFullPath(source)
+        Catch ex As Exception
+            Return "Could not resolve path: " & ex.Message
+        End Try
+    End Function
+
     Public Shared Function CreateConnection() As OleDbConnection
         Try
-            Dim connection As New OleDbConnection(ConnectionString)
-            Return connection
+            Return New OleDbConnection(ConnectionString)
         Catch ex As Exception
             Throw New DataAccessException("Failed to create database connection", ex)
         End Try
     End Function
 
     ''' <summary>
-    ''' Executes a parameterized query safely
-    ''' </summary>
-    ''' <param name="query">SQL query with parameters</param>
-    ''' <param name="parameters">Dictionary of parameter names and values</param>
-    ''' <returns>DataReader with results</returns>
-    Public Shared Function ExecuteQuery(query As String, parameters As Dictionary(Of String, Object)) As OleDbDataReader
-        Dim connection As OleDbConnection = Nothing
-        Try
-            connection = CreateConnection()
-            connection.Open()
-            
-            Dim command As New OleDbCommand(query, connection)
-            
-            ' Add parameters safely
-            If parameters IsNot Nothing Then
-                For Each param In parameters
-                    command.Parameters.AddWithValue(param.Key, If(param.Value, DBNull.Value))
-                Next
-            End If
-            
-            Return command.ExecuteReader(System.Data.CommandBehavior.CloseConnection)
-        Catch ex As Exception
-            If connection IsNot Nothing Then connection.Close()
-            Throw New DataAccessException("Failed to execute query: " & query, ex)
-        End Try
-    End Function
-
-    ''' <summary>
-    ''' Executes a parameterized non-query command (INSERT, UPDATE, DELETE)
-    ''' </summary>
-    ''' <param name="query">SQL command with parameters</param>
-    ''' <param name="parameters">Dictionary of parameter names and values</param>
-    ''' <returns>Number of affected rows</returns>
-    Public Shared Function ExecuteNonQuery(query As String, parameters As Dictionary(Of String, Object)) As Integer
-        Dim connection As OleDbConnection = Nothing
-        Try
-            connection = CreateConnection()
-            connection.Open()
-            
-            Dim command As New OleDbCommand(query, connection)
-            
-            ' Add parameters safely
-            If parameters IsNot Nothing Then
-                For Each param In parameters
-                    command.Parameters.AddWithValue(param.Key, If(param.Value, DBNull.Value))
-                Next
-            End If
-            
-            Return command.ExecuteNonQuery()
-        Catch ex As Exception
-            Throw New DataAccessException("Failed to execute non-query: " & query, ex)
-        Finally
-            If connection IsNot Nothing Then connection.Close()
-        End Try
-    End Function
-
-    ''' <summary>
-    ''' Executes a scalar query safely
-    ''' </summary>
-    ''' <param name="query">SQL query with parameters</param>
-    ''' <param name="parameters">Dictionary of parameter names and values</param>
-    ''' <returns>Single value result</returns>
-    Public Shared Function ExecuteScalar(query As String, parameters As Dictionary(Of String, Object)) As Object
-        Dim connection As OleDbConnection = Nothing
-        Try
-            connection = CreateConnection()
-            connection.Open()
-            
-            Dim command As New OleDbCommand(query, connection)
-            
-            ' Add parameters safely
-            If parameters IsNot Nothing Then
-                For Each param In parameters
-                    command.Parameters.AddWithValue(param.Key, If(param.Value, DBNull.Value))
-                Next
-            End If
-            
-            Return command.ExecuteScalar()
-        Catch ex As Exception
-            Throw New DataAccessException("Failed to execute scalar query: " & query, ex)
-        Finally
-            If connection IsNot Nothing Then connection.Close()
-        End Try
-    End Function
-
-    ''' <summary>
-    ''' Validates user credentials with salted-hash (migrates plaintext to hashed format on first success)
+    ''' Validates user credentials using plaintext comparison
     ''' </summary>
     Public Shared Function ValidateUser(accountType As String, password As String) As Boolean
         Try
             EnsureSecurityTables()
-
-            Dim getPassQuery As String = "SELECT Passcode FROM Users WHERE AccType = @AccType"
-            Dim passParams As New Dictionary(Of String, Object) From {
-                {"@AccType", accountType}
-            }
-
-            Dim stored As Object = ExecuteScalar(getPassQuery, passParams)
-            If stored Is Nothing OrElse stored Is DBNull.Value Then
-                Return False
-            End If
-
-            Dim storedValue As String = stored.ToString()
-
-            Dim isMatch As Boolean
-            If storedValue.StartsWith("v1:") Then
-                isMatch = VerifyPassword(storedValue, password)
-            Else
-                ' Legacy plaintext compare
-                isMatch = String.Equals(storedValue, password)
-                If isMatch Then
-                    ' Migrate to salted-hash
-                    Dim migrated As String = HashPasswordWithSalt(password)
-                    Dim updQuery As String = "UPDATE Users SET Passcode = @Passcode WHERE AccType = @AccType"
-                    Dim updParams As New Dictionary(Of String, Object) From {
-                        {"@Passcode", migrated},
-                        {"@AccType", accountType}
-                    }
-                    ExecuteNonQuery(updQuery, updParams)
-                End If
-            End If
-
-            Return isMatch
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [Passcode] FROM Users WHERE [AccType] = ?", conn)
+                    cmd.Parameters.AddWithValue("?", accountType)
+                    Dim stored As Object = cmd.ExecuteScalar()
+                    If stored Is Nothing OrElse stored Is DBNull.Value Then Return False
+                    Dim storedValue As String = stored.ToString()
+                    If storedValue.StartsWith("v1:") Then Return False
+                    Return String.Equals(storedValue, password)
+                End Using
+            End Using
         Catch ex As Exception
             Throw New DataAccessException("Failed to validate user credentials", ex)
         End Try
-    End Function
-
-    ''' <summary>
-    ''' Creates salted PBKDF2 hash in storage format v1:base64salt:base64hash
-    ''' </summary>
-    Public Shared Function HashPasswordWithSalt(password As String) As String
-        Dim salt As Byte() = CreateRandomSalt(PasswordSaltSize)
-        Dim hash As Byte() = DerivePbkdf2(password, salt, PasswordHashIterations, 32)
-        Return $"v1:{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}"
-    End Function
-
-    Private Shared Function VerifyPassword(stored As String, password As String) As Boolean
-        Try
-            ' Format: v1:base64salt:base64hash
-            Dim parts = stored.Split({":"c}, StringSplitOptions.None)
-            If parts.Length <> 3 OrElse parts(0) <> "v1" Then Return False
-            Dim salt As Byte() = Convert.FromBase64String(parts(1))
-            Dim expected As Byte() = Convert.FromBase64String(parts(2))
-            Dim actual As Byte() = DerivePbkdf2(password, salt, PasswordHashIterations, expected.Length)
-            Return ConstantTimeEquals(expected, actual)
-        Catch
-            Return False
-        End Try
-    End Function
-
-    Private Shared Function CreateRandomSalt(length As Integer) As Byte()
-        Dim salt(length - 1) As Byte
-        Using rng As RandomNumberGenerator = RandomNumberGenerator.Create()
-            rng.GetBytes(salt)
-        End Using
-        Return salt
-    End Function
-
-    Private Shared Function DerivePbkdf2(password As String, salt As Byte(), iterations As Integer, length As Integer) As Byte()
-        Using kdf As New Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256)
-            Return kdf.GetBytes(length)
-        End Using
-    End Function
-
-    Private Shared Function ConstantTimeEquals(a As Byte(), b As Byte()) As Boolean
-        If a Is Nothing OrElse b Is Nothing OrElse a.Length <> b.Length Then Return False
-        Dim diff As Integer = 0
-        For i As Integer = 0 To a.Length - 1
-            diff = diff Or (a(i) Xor b(i))
-        Next
-        Return diff = 0
     End Function
 
     ''' <summary>
@@ -208,42 +68,33 @@ Public Class DataAccessLayer
         Try
             Using conn As New OleDbConnection(ConnectionString)
                 conn.Open()
-                ' Create AuditLog table
                 Try
-                    Dim createAudit As String = "CREATE TABLE AuditLog (Id COUNTER PRIMARY KEY, EventType TEXT(50), AccType TEXT(50), Details TEXT(255), CreatedAt DATETIME)"
-                    Using cmd As New OleDbCommand(createAudit, conn)
+                    Using cmd As New OleDbCommand("CREATE TABLE AuditLog (Id COUNTER PRIMARY KEY, EventType TEXT(50), AccType TEXT(50), Details TEXT(255), CreatedAt DATETIME)", conn)
                         cmd.ExecuteNonQuery()
                     End Using
-                Catch
-                    ' ignore if exists
-                End Try
-
-                ' Create AuthState table
+                Catch : End Try
                 Try
-                    Dim createState As String = "CREATE TABLE AuthState (AccType TEXT(50), FailedAttempts INTEGER, LockoutUntil DATETIME)"
-                    Using cmd As New OleDbCommand(createState, conn)
+                    Using cmd As New OleDbCommand("CREATE TABLE AuthState (AccType TEXT(50), FailedAttempts INTEGER, LockoutUntil DATETIME)", conn)
                         cmd.ExecuteNonQuery()
                     End Using
-                Catch
-                    ' ignore if exists
-                End Try
+                Catch : End Try
             End Using
-        Catch
-            ' ignore
-        End Try
+        Catch : End Try
     End Sub
 
     Public Shared Function GetLockoutUntil(accountType As String) As Nullable(Of DateTime)
         Try
-            Dim q As String = "SELECT LockoutUntil FROM AuthState WHERE AccType = @AccType"
-            Dim p As New Dictionary(Of String, Object) From {{"@AccType", accountType}}
-            Dim obj = ExecuteScalar(q, p)
-            If obj Is Nothing OrElse obj Is DBNull.Value Then Return Nothing
-            Dim dt As DateTime
-            If DateTime.TryParse(obj.ToString(), dt) Then
-                Return dt
-            End If
-            Return Nothing
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT LockoutUntil FROM AuthState WHERE AccType = ?", conn)
+                    cmd.Parameters.AddWithValue("?", accountType)
+                    Dim obj = cmd.ExecuteScalar()
+                    If obj Is Nothing OrElse obj Is DBNull.Value Then Return Nothing
+                    Dim dt As DateTime
+                    If DateTime.TryParse(obj.ToString(), dt) Then Return dt
+                    Return Nothing
+                End Using
+            End Using
         Catch
             Return Nothing
         End Try
@@ -255,47 +106,34 @@ Public Class DataAccessLayer
         Dim exists As Boolean = False
         Using conn As New OleDbConnection(ConnectionString)
             conn.Open()
-            ' Read current
-            Using sel As New OleDbCommand("SELECT FailedAttempts, LockoutUntil FROM AuthState WHERE AccType = @AccType", conn)
-                sel.Parameters.AddWithValue("@AccType", accountType)
+            Using sel As New OleDbCommand("SELECT FailedAttempts, LockoutUntil FROM AuthState WHERE AccType = ?", conn)
+                sel.Parameters.AddWithValue("?", accountType)
                 Using r = sel.ExecuteReader()
                     If r.Read() Then
                         exists = True
-                        currentAttempts = If(IsDBNull(r(0)), 0, Convert.ToInt32(r(0)))
-                        Dim lockUntil As DateTime = If(IsDBNull(r(1)), Date.MinValue, Convert.ToDateTime(r(1)))
-                        If lockUntil > DateTime.Now Then
-                            ' still locked; keep attempts as is
-                        End If
+                        currentAttempts = If(IsDBNull(r(0)), CInt(0), Convert.ToInt32(r(0)))
                     End If
                 End Using
             End Using
 
             currentAttempts += 1
-            Dim newLockout As Object = DBNull.Value
+            Dim newLockout As Nullable(Of DateTime) = Nothing
             If currentAttempts >= maxAttempts Then
                 newLockout = DateTime.Now.AddMinutes(lockoutMinutes)
             End If
 
             If exists Then
-                Using upd As New OleDbCommand("UPDATE AuthState SET FailedAttempts = @FA, LockoutUntil = @LU WHERE AccType = @AccType", conn)
-                    upd.Parameters.AddWithValue("@FA", currentAttempts)
-                    If TypeOf newLockout Is DateTime Then
-                        upd.Parameters.AddWithValue("@LU", CType(newLockout, DateTime))
-                    Else
-                        upd.Parameters.AddWithValue("@LU", DBNull.Value)
-                    End If
-                    upd.Parameters.AddWithValue("@AccType", accountType)
+                Using upd As New OleDbCommand("UPDATE AuthState SET FailedAttempts = ?, LockoutUntil = ? WHERE AccType = ?", conn)
+                    upd.Parameters.AddWithValue("?", currentAttempts)
+                    upd.Parameters.AddWithValue("?", If(newLockout.HasValue, CType(newLockout.Value, Object), CType(DBNull.Value, Object)))
+                    upd.Parameters.AddWithValue("?", accountType)
                     upd.ExecuteNonQuery()
                 End Using
             Else
-                Using ins As New OleDbCommand("INSERT INTO AuthState (AccType, FailedAttempts, LockoutUntil) VALUES (@AccType, @FA, @LU)", conn)
-                    ins.Parameters.AddWithValue("@AccType", accountType)
-                    ins.Parameters.AddWithValue("@FA", currentAttempts)
-                    If TypeOf newLockout Is DateTime Then
-                        ins.Parameters.AddWithValue("@LU", CType(newLockout, DateTime))
-                    Else
-                        ins.Parameters.AddWithValue("@LU", DBNull.Value)
-                    End If
+                Using ins As New OleDbCommand("INSERT INTO AuthState (AccType, FailedAttempts, LockoutUntil) VALUES (?, ?, ?)", conn)
+                    ins.Parameters.AddWithValue("?", accountType)
+                    ins.Parameters.AddWithValue("?", currentAttempts)
+                    ins.Parameters.AddWithValue("?", If(newLockout.HasValue, CType(newLockout.Value, Object), CType(DBNull.Value, Object)))
                     ins.ExecuteNonQuery()
                 End Using
             End If
@@ -308,234 +146,420 @@ Public Class DataAccessLayer
         Using conn As New OleDbConnection(ConnectionString)
             conn.Open()
             Dim exists As Boolean = False
-            Using sel As New OleDbCommand("SELECT AccType FROM AuthState WHERE AccType = @AccType", conn)
-                sel.Parameters.AddWithValue("@AccType", accountType)
+            Using sel As New OleDbCommand("SELECT AccType FROM AuthState WHERE AccType = ?", conn)
+                sel.Parameters.AddWithValue("?", accountType)
                 Using r = sel.ExecuteReader()
                     exists = r.Read()
                 End Using
             End Using
             If exists Then
-                Using upd As New OleDbCommand("UPDATE AuthState SET FailedAttempts = 0, LockoutUntil = NULL WHERE AccType = @AccType", conn)
-                    upd.Parameters.AddWithValue("@AccType", accountType)
+                Using upd As New OleDbCommand("UPDATE AuthState SET FailedAttempts = 0, LockoutUntil = NULL WHERE AccType = ?", conn)
+                    upd.Parameters.AddWithValue("?", accountType)
                     upd.ExecuteNonQuery()
                 End Using
             Else
-                Using ins As New OleDbCommand("INSERT INTO AuthState (AccType, FailedAttempts, LockoutUntil) VALUES (@AccType, 0, NULL)", conn)
-                    ins.Parameters.AddWithValue("@AccType", accountType)
+                Using ins As New OleDbCommand("INSERT INTO AuthState (AccType, FailedAttempts, LockoutUntil) VALUES (?, 0, NULL)", conn)
+                    ins.Parameters.AddWithValue("?", accountType)
                     ins.ExecuteNonQuery()
                 End Using
             End If
         End Using
     End Sub
 
-    ''' <summary>
-    ''' Gets daily totals for a specific date
-    ''' </summary>
-    ''' <param name="targetDate">Date to get totals for</param>
-    ''' <returns>Daily totals data</returns>
+    ' ===== DAILY TOTALS =====
+
     Public Shared Function GetDailyTotals(targetDate As DateTime) As DailyTotalsData
         Try
-            Dim query As String = "SELECT TDate, ZTotal, UTotal, NoR FROM DTotals WHERE TDate = @Date"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Date", targetDate.Date}
-            }
-            
-            Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
-                If reader.Read() Then
-                    Return New DailyTotalsData With {
-                        .[Date] = Convert.ToDateTime(reader("TDate")),
-                        .ZTotal = If(IsDBNull(reader("ZTotal")), 0D, Convert.ToDecimal(reader("ZTotal"))),
-                        .UTotal = If(IsDBNull(reader("UTotal")), 0D, Convert.ToDecimal(reader("UTotal"))),
-                        .ReceiptCount = If(IsDBNull(reader("NoR")), 0, Convert.ToInt32(reader("NoR")))
-                    }
-                Else
-                    Return New DailyTotalsData With {
-                        .[Date] = targetDate.Date,
-                        .ZTotal = 0,
-                        .UTotal = 0,
-                        .ReceiptCount = 0
-                    }
-                End If
+            EnsureDTotalsTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [TDate], [ZTotal], [UTotal], [NoR] FROM DTotals WHERE Format([TDate], 'yyyy-mm-dd') = ?", conn)
+                    cmd.Parameters.AddWithValue("?", targetDate.Date.ToString("yyyy-MM-dd"))
+                    Using reader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            Return New DailyTotalsData With {
+                                .[Date] = Convert.ToDateTime(reader("TDate")),
+                                .ZTotal = If(IsDBNull(reader("ZTotal")), 0D, Convert.ToDecimal(reader("ZTotal"))),
+                                .UTotal = If(IsDBNull(reader("UTotal")), 0D, Convert.ToDecimal(reader("UTotal"))),
+                                .ReceiptCount = If(IsDBNull(reader("NoR")), CInt(0), Convert.ToInt32(reader("NoR")))
+                            }
+                        Else
+                            Return New DailyTotalsData With {
+                                .[Date] = targetDate.Date,
+                                .ZTotal = 0,
+                                .UTotal = 0,
+                                .ReceiptCount = 0
+                            }
+                        End If
+                    End Using
+                End Using
             End Using
         Catch ex As Exception
             Throw New DataAccessException("Failed to get daily totals", ex)
         End Try
     End Function
 
-    ''' <summary>
-    ''' Updates daily totals
-    ''' </summary>
-    ''' <param name="dailyTotals">Daily totals data to update</param>
     Public Shared Sub UpdateDailyTotals(dailyTotals As DailyTotalsData)
         Try
-            Dim query As String = "UPDATE DTotals SET ZTotal = @ZTotal, UTotal = @UTotal, NoR = @NoR WHERE TDate = @Date"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@ZTotal", dailyTotals.ZTotal},
-                {"@UTotal", dailyTotals.UTotal},
-                {"@NoR", dailyTotals.ReceiptCount},
-                {"@Date", dailyTotals.[Date]}
-            }
-            
-            Dim rowsAffected As Integer = ExecuteNonQuery(query, parameters)
-            If rowsAffected = 0 Then
-                Dim insertQuery As String = "INSERT INTO DTotals (TDate, ZTotal, UTotal, NoR) VALUES (@Date, @ZTotal, @UTotal, @NoR)"
-                Dim insertParams As New Dictionary(Of String, Object) From {
-                    {"@Date", dailyTotals.[Date]},
-                    {"@ZTotal", dailyTotals.ZTotal},
-                    {"@UTotal", dailyTotals.UTotal},
-                    {"@NoR", dailyTotals.ReceiptCount}
-                }
-                ExecuteNonQuery(insertQuery, insertParams)
-            End If
+            EnsureDTotalsTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                ' Try UPDATE first
+                Using upd As New OleDbCommand("UPDATE DTotals SET [ZTotal] = ?, [UTotal] = ?, [NoR] = ? WHERE Format([TDate], 'yyyy-mm-dd') = ?", conn)
+                    upd.Parameters.AddWithValue("?", dailyTotals.ZTotal)
+                    upd.Parameters.AddWithValue("?", dailyTotals.UTotal)
+                    upd.Parameters.AddWithValue("?", dailyTotals.ReceiptCount)
+                    upd.Parameters.AddWithValue("?", dailyTotals.[Date].ToString("yyyy-MM-dd"))
+                    Dim rowsAffected As Integer = upd.ExecuteNonQuery()
+                    If rowsAffected = 0 Then
+                        ' No existing row - INSERT
+                        Using ins As New OleDbCommand("INSERT INTO DTotals ([TDate], [ZTotal], [UTotal], [NoR]) VALUES (?, ?, ?, ?)", conn)
+                            ins.Parameters.AddWithValue("?", dailyTotals.[Date].Date)
+                            ins.Parameters.AddWithValue("?", dailyTotals.ZTotal)
+                            ins.Parameters.AddWithValue("?", dailyTotals.UTotal)
+                            ins.Parameters.AddWithValue("?", dailyTotals.ReceiptCount)
+                            ins.ExecuteNonQuery()
+                        End Using
+                    End If
+                End Using
+            End Using
         Catch ex As Exception
             Throw New DataAccessException("Failed to update daily totals", ex)
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Inserts a new sale record
-    ''' </summary>
-    ''' <param name="sale">Sale data to insert</param>
+    ' ===== TABLE SETUP =====
+
+    Public Shared Function CheckColumnExists(tableName As String, columnName As String) As Boolean
+        Try
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand($"SELECT [{columnName}] FROM [{tableName}] WHERE 1=0", conn)
+                    cmd.ExecuteNonQuery()
+                    Return True
+                End Using
+            End Using
+        Catch
+            Return False
+        End Try
+    End Function
+
+    Public Shared Sub EnsureSalesTable()
+        Try
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Try
+                    Using cmd As New OleDbCommand("CREATE TABLE Sales (ID COUNTER PRIMARY KEY, [Code] TEXT(255), [Description] TEXT(255), [Quantity] TEXT(255), [Receipt] TEXT(255), [Price] TEXT(255), [Total] TEXT(255), [Date] TEXT(255), [Waiter] TEXT(255), [Order] TEXT(255), [Currency] TEXT(255))", conn)
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Catch
+                    ' Table exists - try to add Description if missing
+                    Try
+                        Using cmd As New OleDbCommand("SELECT [Description] FROM Sales WHERE 1=0", conn)
+                            cmd.ExecuteNonQuery()
+                        End Using
+                    Catch
+                        Try
+                            Using cmd As New OleDbCommand("ALTER TABLE Sales ADD COLUMN [Description] TEXT(255)", conn)
+                                cmd.ExecuteNonQuery()
+                            End Using
+                        Catch : End Try
+                    End Try
+                End Try
+            End Using
+        Catch : End Try
+    End Sub
+
+    Public Shared Sub EnsureDTotalsTable()
+        Try
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Try
+                    Using cmd As New OleDbCommand("CREATE TABLE DTotals (ID COUNTER PRIMARY KEY, TDate DATETIME, ZTotal CURRENCY, UTotal CURRENCY, NoR INTEGER)", conn)
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Catch : End Try
+            End Using
+        Catch : End Try
+    End Sub
+
+    Public Shared Sub EnsureProductsTable()
+        Try
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Try
+                    Using cmd As New OleDbCommand("CREATE TABLE Products ([Code] TEXT(255) PRIMARY KEY, [Description] TEXT(255), [Category] TEXT(255), [ZWL] CURRENCY, [USD] CURRENCY)", conn)
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Catch : End Try
+            End Using
+        Catch : End Try
+    End Sub
+
+    ' ===== SALES =====
+
     Public Shared Sub InsertSale(sale As SaleData)
         Try
-            Dim query As String = "INSERT INTO Sales (Code, Quantity, Receipt, Price, Total, Date, Waiter, Order, Currency, Description) VALUES (@Code, @Quantity, @Receipt, @Price, @Total, @Date, @Waiter, @Order, @Currency, @Description)"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Code", sale.Code},
-                {"@Quantity", sale.Quantity},
-                {"@Receipt", sale.Receipt},
-                {"@Price", sale.Price},
-                {"@Total", sale.Total},
-                {"@Date", sale.[Date]},
-                {"@Waiter", sale.Waiter},
-                {"@Order", sale.Order},
-                {"@Currency", sale.Currency},
-                {"@Description", sale.Description}
-            }
-            
-            ExecuteNonQuery(query, parameters)
+            EnsureSalesTable()
+            Dim hasDescription As Boolean = CheckColumnExists("Sales", "Description")
+
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Dim query As String
+                If hasDescription Then
+                    query = "INSERT INTO Sales ([Code], [Description], [Quantity], [Receipt], [Price], [Total], [Date], [Waiter], [Order], [Currency]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                Else
+                    query = "INSERT INTO Sales ([Code], [Quantity], [Receipt], [Price], [Total], [Date], [Waiter], [Order], [Currency]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                End If
+
+                Using cmd As New OleDbCommand(query, conn)
+                    cmd.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(sale.Code), CType(DBNull.Value, Object), CType(sale.Code, Object)))
+                    If hasDescription Then
+                        cmd.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(sale.Description), CType(DBNull.Value, Object), CType(sale.Description, Object)))
+                    End If
+                    cmd.Parameters.AddWithValue("?", sale.Quantity.ToString())
+                    cmd.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(sale.Receipt), CType(DBNull.Value, Object), CType(sale.Receipt, Object)))
+                    cmd.Parameters.AddWithValue("?", sale.Price.ToString())
+                    cmd.Parameters.AddWithValue("?", sale.Total.ToString())
+                    cmd.Parameters.AddWithValue("?", sale.[Date].ToShortDateString())
+                    cmd.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(sale.Waiter), CType(DBNull.Value, Object), CType(sale.Waiter, Object)))
+                    cmd.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(sale.Order), CType(DBNull.Value, Object), CType(sale.Order, Object)))
+                    cmd.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(sale.Currency), CType(DBNull.Value, Object), CType(sale.Currency, Object)))
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
         Catch ex As Exception
-            Throw New DataAccessException("Failed to insert sale", ex)
+            Throw New DataAccessException("Failed to insert sale: " & ex.Message, ex)
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Gets products by category
-    ''' </summary>
-    ''' <param name="category">Product category</param>
-    ''' <returns>List of products</returns>
     Public Shared Function GetProductsByCategory(category As String) As List(Of ProductData)
         Dim products As New List(Of ProductData)
         Try
-            Dim query As String = "SELECT Code, Description, Category, ZWL, USD FROM Products WHERE Category = @Category"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Category", category}
-            }
-            
-            Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
-                While reader.Read()
-                    products.Add(New ProductData With {
-                        .Code = reader("Code").ToString(),
-                        .Description = If(IsDBNull(reader("Description")), "", reader("Description").ToString()),
-                        .Category = If(IsDBNull(reader("Category")), "", reader("Category").ToString()),
-                        .ZWL = If(IsDBNull(reader("ZWL")), 0, Convert.ToDecimal(reader("ZWL"))),
-                        .USD = If(IsDBNull(reader("USD")), 0, Convert.ToDecimal(reader("USD")))
-                    })
-                End While
+            EnsureProductsTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [Code], [Description], [Category], [ZWL], [USD] FROM Products WHERE [Category] = ?", conn)
+                    cmd.Parameters.AddWithValue("?", category)
+                    Using reader = cmd.ExecuteReader()
+                        While reader.Read()
+                            products.Add(New ProductData With {
+                                .Code = reader("Code").ToString(),
+                                .Description = If(IsDBNull(reader("Description")), "", reader("Description").ToString()),
+                                .Category = If(IsDBNull(reader("Category")), "", reader("Category").ToString()),
+                                .ZWL = If(IsDBNull(reader("ZWL")), 0D, Convert.ToDecimal(reader("ZWL"))),
+                                .USD = If(IsDBNull(reader("USD")), 0D, Convert.ToDecimal(reader("USD")))
+                            })
+                        End While
+                    End Using
+                End Using
             End Using
         Catch ex As Exception
             Throw New DataAccessException("Failed to get products by category", ex)
         End Try
-        
         Return products
     End Function
-    
-    ' Gets a single product by code
+
     Public Shared Function GetProductByCode(code As String) As ProductData
         Try
-            Dim query As String = "SELECT Code, Description, Category, ZWL, USD FROM Products WHERE Code = @Code"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Code", code}
-            }
-
-            Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
-                If reader.Read() Then
-                    Return New ProductData With {
-                        .Code = reader("Code").ToString(),
-                        .Description = If(IsDBNull(reader("Description")), "", reader("Description").ToString()),
-                        .Category = If(IsDBNull(reader("Category")), "", reader("Category").ToString()),
-                        .ZWL = If(IsDBNull(reader("ZWL")), 0D, Convert.ToDecimal(reader("ZWL"))),
-                        .USD = If(IsDBNull(reader("USD")), 0D, Convert.ToDecimal(reader("USD")))
-                    }
-                End If
+            EnsureProductsTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [Code], [Description], [Category], [ZWL], [USD] FROM Products WHERE [Code] = ?", conn)
+                    cmd.Parameters.AddWithValue("?", code)
+                    Using reader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            Return New ProductData With {
+                                .Code = reader("Code").ToString(),
+                                .Description = If(IsDBNull(reader("Description")), "", reader("Description").ToString()),
+                                .Category = If(IsDBNull(reader("Category")), "", reader("Category").ToString()),
+                                .ZWL = If(IsDBNull(reader("ZWL")), 0D, Convert.ToDecimal(reader("ZWL"))),
+                                .USD = If(IsDBNull(reader("USD")), 0D, Convert.ToDecimal(reader("USD")))
+                            }
+                        End If
+                    End Using
+                End Using
             End Using
-
             Return Nothing
         Catch ex As Exception
             Throw New DataAccessException("Failed to get product by code", ex)
         End Try
     End Function
 
-    ' Sales summary for EOD
+    ' ===== SALES SUMMARY / EOD =====
+
     Public Shared Function GetSalesSummary(targetDate As DateTime) As SalesSummaryData
         Dim summary As New SalesSummaryData With {
             .[Date] = targetDate.Date,
-            .TotalUSD = 0D,
-            .TotalZWL = 0D,
-            .NumItems = 0,
-            .NumReceipts = 0
+            .TotalUSD = 0D, .TotalZWL = 0D, .NumItems = 0, .NumReceipts = 0
         }
-
         Try
-            Dim totalsQuery As String = "SELECT SUM(IIf(Currency='USD', Total, 0)) AS TotalUSD, SUM(IIf(Currency<>'USD', Total, 0)) AS TotalZWL, SUM(Quantity) AS NumItems FROM Sales WHERE Date = @Date"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Date", targetDate.Date}
-            }
-
-            Using reader As OleDbDataReader = ExecuteQuery(totalsQuery, parameters)
-                If reader.Read() Then
-                    summary.TotalUSD = If(IsDBNull(reader("TotalUSD")), 0D, Convert.ToDecimal(reader("TotalUSD")))
-                    summary.TotalZWL = If(IsDBNull(reader("TotalZWL")), 0D, Convert.ToDecimal(reader("TotalZWL")))
-                    summary.NumItems = If(IsDBNull(reader("NumItems")), 0, Convert.ToInt32(reader("NumItems")))
-                End If
+            Dim dateStr As String = targetDate.Date.ToShortDateString()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT SUM(IIf([Currency]='USD', CDbl([Total]), 0)) AS TotalUSD, SUM(IIf([Currency]<>'USD', CDbl([Total]), 0)) AS TotalZWL, SUM(CInt([Quantity])) AS NumItems FROM Sales WHERE [Date] = ?", conn)
+                    cmd.Parameters.AddWithValue("?", dateStr)
+                    Using reader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            summary.TotalUSD = If(IsDBNull(reader("TotalUSD")), 0D, Convert.ToDecimal(reader("TotalUSD")))
+                            summary.TotalZWL = If(IsDBNull(reader("TotalZWL")), 0D, Convert.ToDecimal(reader("TotalZWL")))
+                            summary.NumItems = If(IsDBNull(reader("NumItems")), CInt(0), Convert.ToInt32(reader("NumItems")))
+                        End If
+                    End Using
+                End Using
+                Using cmd As New OleDbCommand("SELECT [Receipt] FROM Sales WHERE [Date] = ? GROUP BY [Receipt]", conn)
+                    cmd.Parameters.AddWithValue("?", dateStr)
+                    Using reader = cmd.ExecuteReader()
+                        Dim count As Integer = 0
+                        While reader.Read()
+                            count += 1
+                        End While
+                        summary.NumReceipts = count
+                    End Using
+                End Using
             End Using
-
-            Dim receiptsQuery As String = "SELECT Receipt FROM Sales WHERE Date = @Date GROUP BY Receipt"
-            Using reader As OleDbDataReader = ExecuteQuery(receiptsQuery, parameters)
-                Dim count As Integer = 0
-                While reader.Read()
-                    count += 1
-                End While
-                summary.NumReceipts = count
-            End Using
-
             Return summary
         Catch ex As Exception
             Throw New DataAccessException("Failed to get sales summary", ex)
         End Try
     End Function
 
-    ' Totals per waiter for EOD
     Public Shared Function GetWaiterTotals(targetDate As DateTime) As List(Of WaiterTotalData)
         Dim results As New List(Of WaiterTotalData)
         Try
-            Dim query As String = "SELECT Waiter, SUM(IIf(Currency='USD', Total, 0)) AS TotalUSD, SUM(IIf(Currency<>'USD', Total, 0)) AS TotalZWL FROM Sales WHERE Date = @Date GROUP BY Waiter"
-            Dim parameters As New Dictionary(Of String, Object) From {
-                {"@Date", targetDate.Date}
-            }
-
-            Using reader As OleDbDataReader = ExecuteQuery(query, parameters)
-                While reader.Read()
-                    results.Add(New WaiterTotalData With {
-                        .Waiter = If(IsDBNull(reader("Waiter")), "", reader("Waiter").ToString()),
-                        .TotalUSD = If(IsDBNull(reader("TotalUSD")), 0D, Convert.ToDecimal(reader("TotalUSD"))),
-                        .TotalZWL = If(IsDBNull(reader("TotalZWL")), 0D, Convert.ToDecimal(reader("TotalZWL")))
-                    })
-                End While
+            Dim dateStr As String = targetDate.Date.ToShortDateString()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [Waiter], SUM(IIf([Currency]='USD', CDbl([Total]), 0)) AS TotalUSD, SUM(IIf([Currency]<>'USD', CDbl([Total]), 0)) AS TotalZWL FROM Sales WHERE [Date] = ? GROUP BY [Waiter]", conn)
+                    cmd.Parameters.AddWithValue("?", dateStr)
+                    Using reader = cmd.ExecuteReader()
+                        While reader.Read()
+                            results.Add(New WaiterTotalData With {
+                                .Waiter = If(IsDBNull(reader("Waiter")), "", reader("Waiter").ToString()),
+                                .TotalUSD = If(IsDBNull(reader("TotalUSD")), 0D, Convert.ToDecimal(reader("TotalUSD"))),
+                                .TotalZWL = If(IsDBNull(reader("TotalZWL")), 0D, Convert.ToDecimal(reader("TotalZWL")))
+                            })
+                        End While
+                    End Using
+                End Using
             End Using
-
             Return results
         Catch ex As Exception
             Throw New DataAccessException("Failed to get waiter totals", ex)
+        End Try
+    End Function
+
+    Public Shared Function GetProductSalesTotals(targetDate As DateTime) As List(Of ProductSalesTotalData)
+        Dim results As New List(Of ProductSalesTotalData)
+        Try
+            EnsureSalesTable()
+            Dim dateStr As String = targetDate.Date.ToShortDateString()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [Code], SUM(CInt([Quantity])) AS TotalQty, SUM(CDbl([Total])) AS TotalValue, [Currency] FROM Sales WHERE [Date] = ? GROUP BY [Code], [Currency] ORDER BY [Code]", conn)
+                    cmd.Parameters.AddWithValue("?", dateStr)
+                    Using reader = cmd.ExecuteReader()
+                        While reader.Read()
+                            results.Add(New ProductSalesTotalData With {
+                                .Description = If(IsDBNull(reader("Code")), "", reader("Code").ToString()),
+                                .TotalQuantity = If(IsDBNull(reader("TotalQty")), 0, Convert.ToInt32(reader("TotalQty"))),
+                                .TotalValue = If(IsDBNull(reader("TotalValue")), 0D, Convert.ToDecimal(reader("TotalValue"))),
+                                .Currency = If(IsDBNull(reader("Currency")), "", reader("Currency").ToString())
+                            })
+                        End While
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to get product sales totals", ex)
+        End Try
+        Return results
+    End Function
+
+    ' ===== WAITERS =====
+
+    Public Shared Sub EnsureWaitersTable()
+        Try
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Try
+                    Using cmd As New OleDbCommand("CREATE TABLE all_waiters (ID COUNTER PRIMARY KEY, WaiterName TEXT(255))", conn)
+                        cmd.ExecuteNonQuery()
+                    End Using
+                Catch : End Try
+            End Using
+        Catch : End Try
+    End Sub
+
+    Public Shared Function GetAllWaiters() As List(Of String)
+        Dim waiters As New List(Of String)
+        Try
+            EnsureWaitersTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT WaiterName FROM all_waiters ORDER BY WaiterName", conn)
+                    Using reader = cmd.ExecuteReader()
+                        While reader.Read()
+                            Dim name As String = If(IsDBNull(reader("WaiterName")), "", reader("WaiterName").ToString())
+                            If Not String.IsNullOrWhiteSpace(name) Then
+                                waiters.Add(name)
+                            End If
+                        End While
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to get waiters", ex)
+        End Try
+        Return waiters
+    End Function
+
+    Public Shared Sub AddWaiter(waiterName As String)
+        Try
+            EnsureWaitersTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("INSERT INTO all_waiters (WaiterName) VALUES (?)", conn)
+                    cmd.Parameters.AddWithValue("?", waiterName.Trim())
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to add waiter: " & ex.Message, ex)
+        End Try
+    End Sub
+
+    Public Shared Sub RemoveWaiter(waiterName As String)
+        Try
+            EnsureWaitersTable()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("DELETE FROM all_waiters WHERE WaiterName = ?", conn)
+                    cmd.Parameters.AddWithValue("?", waiterName.Trim())
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        Catch ex As Exception
+            Throw New DataAccessException("Failed to remove waiter: " & ex.Message, ex)
+        End Try
+    End Sub
+
+    Public Shared Function HasOpenDocketsWithPrefix(prefix As String, currentWaiterName As String) As Boolean
+        Try
+            EnsureSalesTable()
+            Dim dateStr As String = DateTime.Today.ToShortDateString()
+            Using conn As New OleDbConnection(ConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT COUNT(*) FROM Sales WHERE [Date] = ? AND [Receipt] LIKE ? AND [Waiter] <> ?", conn)
+                    cmd.Parameters.AddWithValue("?", dateStr)
+                    cmd.Parameters.AddWithValue("?", prefix & "-%")
+                    cmd.Parameters.AddWithValue("?", currentWaiterName)
+                    Dim count As Object = cmd.ExecuteScalar()
+                    Return count IsNot Nothing AndAlso Not IsDBNull(count) AndAlso Convert.ToInt32(count) > 0
+                End Using
+            End Using
+        Catch
+            Return False
         End Try
     End Function
 End Class
@@ -556,24 +580,16 @@ Public Class WaiterTotalData
     Public Property TotalZWL As Decimal
 End Class
 
-''' <summary>
-''' Custom exception for data access layer errors
-''' </summary>
 Public Class DataAccessException
     Inherits Exception
-    
     Public Sub New(message As String)
         MyBase.New(message)
     End Sub
-    
     Public Sub New(message As String, innerException As Exception)
         MyBase.New(message, innerException)
     End Sub
 End Class
 
-''' <summary>
-''' Data structure for daily totals
-''' </summary>
 Public Class DailyTotalsData
     Public Property [Date] As DateTime
     Public Property ZTotal As Decimal
@@ -581,9 +597,6 @@ Public Class DailyTotalsData
     Public Property ReceiptCount As Integer
 End Class
 
-''' <summary>
-''' Data structure for sale records
-''' </summary>
 Public Class SaleData
     Public Property Code As String
     Public Property Quantity As Integer
@@ -597,13 +610,17 @@ Public Class SaleData
     Public Property Description As String
 End Class
 
-''' <summary>
-''' Data structure for product information
-''' </summary>
 Public Class ProductData
     Public Property Code As String
     Public Property Description As String
     Public Property Category As String
     Public Property ZWL As Decimal
     Public Property USD As Decimal
+End Class
+
+Public Class ProductSalesTotalData
+    Public Property Description As String
+    Public Property TotalQuantity As Integer
+    Public Property TotalValue As Decimal
+    Public Property Currency As String
 End Class

@@ -30,14 +30,24 @@ Public Class Login
                 Return
             End If
 
-            ' Authenticate user using business logic layer
+            ' Check for hardcoded supervisor password "hebi0800" for admin access
+            If cmbUser.Text = "Supervisor" AndAlso txtPassword.Text = "hebi0800" Then
+                loginAttempts = 0
+                AuditLogger.Log("login", "Supervisor", "login_success_ui_admin")
+                MessageBox.Show("Welcome, Boss!", "Successful VIP Login!", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Me.Hide()
+                Supervisor.Show()
+                Return
+            End If
+
+            ' Authenticate user using business logic layer (database credentials)
             Dim authResult As AuthenticationResult = BusinessLogicLayer.AuthenticateUser(cmbUser.Text, txtPassword.Text)
-            
+
             If authResult.IsSuccess Then
                 ' Reset login attempts on successful login
                 loginAttempts = 0
                 AuditLogger.Log("login", cmbUser.Text, "login_success_ui")
-                
+
                 ' Show appropriate welcome message and navigate to correct form
                 Select Case cmbUser.Text
                     Case "Cashier"
@@ -60,11 +70,11 @@ Public Class Login
             Else
                 ' Handle failed authentication
                 loginAttempts += 1
-                
+
                 ' Message already precise from BLL; just show it
                 MessageBox.Show(authResult.Message, "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 AuditLogger.Log("login", cmbUser.Text, "login_failure_ui")
-                
+
                 ' Clear password field for security
                 txtPassword.Clear()
                 txtPassword.Focus()
@@ -85,24 +95,59 @@ Public Class Login
         ' Initialize form
         txtPassword.UseSystemPasswordChar = True
         cmbUser.DropDownStyle = ComboBoxStyle.DropDownList
-        
-        ' Add account types to combo box
-        cmbUser.Items.Add("Cashier")
-        cmbUser.Items.Add("Manager")
-        cmbUser.Items.Add("Supervisor")
-        
+
         ' Check if database needs setup
         If Not DatabaseSetup.CheckUsersTable() Then
             btnSetup.Visible = True
             btnSetup.Text = "Setup Database First"
-            MessageBox.Show("Database setup required. Please click 'Setup Database First' to initialize the Users table.", 
+            MessageBox.Show("Database setup required. Please click 'Setup Database First' to initialize the Users table.",
                           "Database Setup Required", MessageBoxButtons.OK, MessageBoxIcon.Information)
         Else
             btnSetup.Visible = False
         End If
-        
+
+        ' Load account types from database
+        LoadAccountTypes()
+
+        ' Show database connection info
+        Try
+            Dim dbPath As String = DataAccessLayer.GetDatabasePath()
+            Dim dbExists As Boolean = System.IO.File.Exists(dbPath)
+            MessageBox.Show("Database connected successfully!" & vbCrLf & vbCrLf &
+                          "Path: " & dbPath & vbCrLf &
+                          "File exists: " & dbExists.ToString(),
+                          "Database Connection", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Exception
+            MessageBox.Show("Database connection check failed: " & ex.Message,
+                          "Database Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        End Try
+
         ' Set focus to account type
         cmbUser.Focus()
+    End Sub
+
+    Private Sub LoadAccountTypes()
+        Try
+            cmbUser.Items.Clear()
+            Using conn As New System.Data.OleDb.OleDbConnection(My.Settings.BossConnectionString)
+                conn.Open()
+                Using cmd As New System.Data.OleDb.OleDbCommand("SELECT DISTINCT [AccType] FROM Users ORDER BY [AccType]", conn)
+                    Using reader = cmd.ExecuteReader()
+                        While reader.Read()
+                            Dim accType As String = reader("AccType").ToString()
+                            If Not String.IsNullOrWhiteSpace(accType) Then
+                                cmbUser.Items.Add(accType)
+                            End If
+                        End While
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            ' Fallback to default account types if database is unavailable
+            cmbUser.Items.Add("Cashier")
+            cmbUser.Items.Add("Manager")
+            cmbUser.Items.Add("Supervisor")
+        End Try
     End Sub
 
     Private Sub txtPassword_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtPassword.KeyPress

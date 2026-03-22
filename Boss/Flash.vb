@@ -138,7 +138,7 @@ Public Class Flash
 
         ' Create company label
         Dim companyLabel As New Label()
-        companyLabel.Text = "© 2023 Spacetime Softwares"
+        companyLabel.Text = "© 2023 Albert Magarire"
         companyLabel.Font = New Font("Segoe UI", 11, FontStyle.Regular)
         companyLabel.ForeColor = Color.FromArgb(100, 100, 100)
         companyLabel.BackColor = Color.Transparent

@@ -6,12 +6,12 @@ Public Class AuditLogger
             DataAccessLayer.EnsureSecurityTables()
             Using conn As OleDbConnection = DataAccessLayer.CreateConnection()
                 conn.Open()
-                Dim q As String = "INSERT INTO AuditLog (EventType, AccType, Details, CreatedAt) VALUES (@EventType, @AccType, @Details, @CreatedAt)"
+                Dim q As String = "INSERT INTO AuditLog (EventType, AccType, Details, CreatedAt) VALUES (?, ?, ?, ?)"
                 Using cmd As New OleDbCommand(q, conn)
-                    cmd.Parameters.AddWithValue("@EventType", eventType)
-                    cmd.Parameters.AddWithValue("@AccType", If(accountType, ""))
-                    cmd.Parameters.AddWithValue("@Details", If(details, ""))
-                    cmd.Parameters.AddWithValue("@CreatedAt", DateTime.Now)
+                    cmd.Parameters.AddWithValue("?", eventType)
+                    cmd.Parameters.AddWithValue("?", If(accountType, ""))
+                    cmd.Parameters.AddWithValue("?", If(details, ""))
+                    cmd.Parameters.AddWithValue("?", DateTime.Now)
                     cmd.ExecuteNonQuery()
                 End Using
             End Using

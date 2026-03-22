@@ -1,38 +1,48 @@
-﻿Imports System.Data.OleDb
+Imports System.Data.OleDb
 Public Class Reports
 
     Private Sub btnEOD_Click(sender As Object, e As EventArgs) Handles btnEOD.Click
-        CashUpDate.ShowDialog()
-        CashUp.rtfCashUp.AppendText(vbCrLf & "End Of Day Cash Up Report" & vbCrLf & CashUpDate.DateTimePicker1.Value)
-        Dim conn As New OleDbConnection
-        conn.ConnectionString = My.Settings.BossConnectionString
-        If conn.State = ConnectionState.Closed Then
-            conn.Open()
-        End If
-        Dim cmd As New OleDbCommand("select * from DTotals where [TDate]='" & CashUpDate.DateTimePicker1.Value.ToShortDateString & "'", conn)
-        Dim data As OleDbDataReader = cmd.ExecuteReader
-        If data.HasRows Then
-            Do While data.Read()
-                If data("NoR").ToString = "" Then
-                    MsgBox("No entries were made!")
-                Else
-                    CashUp.rtfCashUp.AppendText(vbCrLf & "Number of receipts generated: " & data("NoR").ToString)
-                    CashUp.rtfCashUp.AppendText(vbCrLf & "Total  USD Received: " & vbTab & data("UTotal").ToString)
-                    CashUp.rtfCashUp.AppendText(vbCrLf & "Total  ZWD Received: " & vbTab & data("ZTotal").ToString)
-                End If
-            Loop
-        Else
-            MsgBox("Error! Could not load report!")
-        End If
-        
-        CashUp.rtfCashUp.AppendText(vbCrLf + vbCrLf + "---------------------------------------------------------------------------------------------------------------" + vbTab)
-        CashUp.rtfCashUp.AppendText(vbCrLf + "End Of Report" + vbTab)
-        Me.Hide()
-        CashUp.Show()
+        Try
+            CashUpDate.ShowDialog()
+            Dim selectedDate As DateTime = CashUpDate.DateTimePicker1.Value.Date
+
+            CashUp.rtfCashUp.Clear()
+            CashUp.rtfCashUp.AppendText("End Of Day Cash Up Report" & vbCrLf & selectedDate.ToLongDateString())
+
+            ' Use parameterized query with Format() for date comparison
+            Using conn As New OleDbConnection(My.Settings.BossConnectionString)
+                conn.Open()
+                Using cmd As New OleDbCommand("SELECT [NoR], [UTotal], [ZTotal] FROM DTotals WHERE Format([TDate], 'yyyy-mm-dd') = ?", conn)
+                    cmd.Parameters.AddWithValue("?", selectedDate.ToString("yyyy-MM-dd"))
+                    Using data = cmd.ExecuteReader()
+                        If data.HasRows Then
+                            Do While data.Read()
+                                If IsDBNull(data("NoR")) OrElse data("NoR").ToString() = "" Then
+                                    CashUp.rtfCashUp.AppendText(vbCrLf & vbCrLf & "No entries were made for this date.")
+                                Else
+                                    CashUp.rtfCashUp.AppendText(vbCrLf & vbCrLf & "Number of dockets generated: " & data("NoR").ToString())
+                                    CashUp.rtfCashUp.AppendText(vbCrLf & "Total USD Received: " & vbTab & data("UTotal").ToString())
+                                    CashUp.rtfCashUp.AppendText(vbCrLf & "Total ZWD Received: " & vbTab & data("ZTotal").ToString())
+                                End If
+                            Loop
+                        Else
+                            CashUp.rtfCashUp.AppendText(vbCrLf & vbCrLf & "No report data found for this date.")
+                        End If
+                    End Using
+                End Using
+            End Using
+
+            CashUp.rtfCashUp.AppendText(vbCrLf & vbCrLf & "---------------------------------------------------------------------------------------------------------------")
+            CashUp.rtfCashUp.AppendText(vbCrLf & "End Of Report")
+            Me.Hide()
+            CashUp.Show()
+        Catch ex As Exception
+            MessageBox.Show("Error generating report: " & ex.Message, "Report Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
 
     Private Sub btnInvoice_Click(sender As Object, e As EventArgs) Handles btnInvoice.Click
-        EOD.rtfReceipt.AppendText(vbCrLf & "Sales By Invoice Report for:" & vbCrLf & Today)
+        EOD.rtfReceipt.AppendText(vbCrLf & "Sales By Docket Report for:" & vbCrLf & Today)
         Me.Hide()
         EOD.Show()
     End Sub

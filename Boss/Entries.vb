@@ -8,11 +8,14 @@ Public Class Entries
     Private currentItemTotal, currentItemZWDTotal As Decimal
     Private chickenType, steakType, breakfastType As String
     Private productCount As Integer = 0
-    Private currentReceiptNumber As String = "001"
+    Private currentDocketNumber As String = ""
     Private currentSale As New List(Of SaleData)
     Private dailyTotals As DailyTotalsData
     Private selectedProduct As ProductData
     Private productCards As New List(Of Button)
+
+    ' Waiter docket tracking: key = waiter prefix (e.g. "N"), value = current count (1-5)
+    Private Shared waiterDocketCounters As New Dictionary(Of String, Integer)
 
     ' Additional variables for compatibility
     Private cusd As Boolean = True
@@ -47,9 +50,9 @@ Public Class Entries
             ' Load daily totals using business logic layer
             dailyTotals = BusinessLogicLayer.CalculateDailyTotals(DateTime.Today)
 
-            ' Set up receipt number
-            currentReceiptNumber = BusinessLogicLayer.GenerateReceiptNumber(DateTime.Today)
-            Label2.Text = currentReceiptNumber.PadLeft(3, "0"c)
+            ' Docket number will be set when waiter is selected
+            currentDocketNumber = ""
+            Label2.Text = ""
 
             ' Update daily totals display
             txtDtotal.Text = dailyTotals.UTotal.ToString("F2")
@@ -61,8 +64,8 @@ Public Class Entries
             Me.TotalsTableAdapter.Fill(Me.BossDataSet.Totals)
             Me.ProductsTableAdapter.Fill(Me.BossDataSet.Products)
 
-            ' Initialize receipt display
-            InitializeReceiptDisplay()
+            ' Initialize docket display
+            InitializeDocketDisplay()
 
             ' Start timers
             Timer1.Start()
@@ -78,18 +81,12 @@ Public Class Entries
         End Try
     End Sub
 
-    Private Sub InitializeReceiptDisplay()
+    Private Sub InitializeDocketDisplay()
         rtfReceipt.Clear()
-        rtfReceipt.AppendText("BOSS BRANDS (PVT) LTD" & vbCrLf)
-        rtfReceipt.AppendText("60 BEDFORD ROAD" & vbCrLf)
-        rtfReceipt.AppendText("AVONDALE" & vbCrLf)
-        rtfReceipt.AppendText("HARARE" & vbCrLf & vbCrLf)
-        rtfReceipt.AppendText("Tel: 0773277464" & vbCrLf)
-        rtfReceipt.AppendText("VAT NO: 220372929" & vbCrLf)
-        rtfReceipt.AppendText("TIN NO: 2001506620" & vbCrLf)
+        rtfReceipt.AppendText(" " & vbCrLf)
+        rtfReceipt.AppendText("KITCHEN ORDER DOCKET" & vbCrLf)
         rtfReceipt.AppendText(" " & vbCrLf)
         rtfReceipt.AppendText("Date: " & DateTimePicker1.Value.ToLongDateString & vbCrLf)
-        rtfReceipt.AppendText("Number: " & currentReceiptNumber.PadLeft(3, "0"c) & vbCrLf)
     End Sub
 
     Private Sub InitializeFormControls()
@@ -102,7 +99,7 @@ Public Class Entries
         ' Set up order types
         SetupOrderTypes()
 
-        ' Set up waiter list
+        ' Set up waiter list from database
         SetupWaiterList()
     End Sub
 
@@ -172,6 +169,7 @@ Public Class Entries
             card.Font = New Font("Segoe UI", 10, FontStyle.Regular)
             card.TextAlign = ContentAlignment.TopLeft
             card.BackColor = Color.White
+            card.ForeColor = Color.FromArgb(30, 39, 46)
             card.FlatStyle = FlatStyle.Flat
             card.FlatAppearance.BorderSize = 0
             card.Cursor = Cursors.Hand
@@ -209,7 +207,7 @@ Public Class Entries
     Private Sub ProductCard_MouseLeave(sender As Object, e As EventArgs)
         Dim card As Button = DirectCast(sender, Button)
         card.BackColor = Color.White
-        card.ForeColor = Color.Black
+        card.ForeColor = Color.FromArgb(30, 39, 46)
         card.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220)
         card.FlatAppearance.BorderSize = 1
     End Sub
@@ -241,23 +239,82 @@ Public Class Entries
 
     Private Sub SetupWaiterList()
         cmbwaiter.Items.Clear()
-        ' This would be populated from database in a real implementation
-        cmbwaiter.Items.Add("Mary")
-        cmbwaiter.Items.Add("John")
-        cmbwaiter.Items.Add("Peter")
-        cmbwaiter.Items.Add("Sarah")
-        cmbwaiter.Items.Add("Mike")
-        cmbwaiter.Items.Add("Lisa")
-        cmbwaiter.Items.Add("David")
+        Try
+            ' Load waiters from database
+            Dim waiters As List(Of String) = DataAccessLayer.GetAllWaiters()
+            For Each waiterName As String In waiters
+                cmbwaiter.Items.Add(waiterName)
+            Next
+        Catch ex As Exception
+            ' Fallback: if table doesn't exist yet, show empty list
+        End Try
     End Sub
 
+    ''' <summary>
+    ''' Generates a docket number based on waiter name initial(s).
+    ''' Format: Initial-01 through Initial-05, then resets.
+    ''' If a single-initial prefix conflicts with an existing open docket, uses two letters.
+    ''' </summary>
+    Private Function GenerateWaiterDocketNumber(waiterName As String) As String
+        If String.IsNullOrWhiteSpace(waiterName) Then Return ""
+
+        ' Determine the prefix: start with first letter
+        Dim prefix As String = waiterName.Substring(0, 1).ToUpper()
+
+        ' Check if another waiter already uses this single-letter prefix
+        Dim conflictExists As Boolean = False
+        For Each key As String In waiterDocketCounters.Keys
+            ' If same prefix but it was set by a different waiter name
+            If key = prefix Then
+                ' Check if there's a different waiter using this prefix
+                ' We track this by checking open sales in the database
+                conflictExists = DataAccessLayer.HasOpenDocketsWithPrefix(prefix, waiterName)
+                Exit For
+            End If
+        Next
+
+        ' Also check database for existing open dockets with same prefix from different waiter
+        If Not conflictExists Then
+            conflictExists = DataAccessLayer.HasOpenDocketsWithPrefix(prefix, waiterName)
+        End If
+
+        If conflictExists AndAlso waiterName.Length >= 2 Then
+            prefix = waiterName.Substring(0, 2)
+            prefix = prefix.Substring(0, 1).ToUpper() & prefix.Substring(1, 1).ToLower()
+        End If
+
+        ' Get or initialize counter for this prefix
+        If Not waiterDocketCounters.ContainsKey(prefix) Then
+            waiterDocketCounters(prefix) = 0
+        End If
+
+        ' Increment counter (1-5, then reset)
+        waiterDocketCounters(prefix) += 1
+        If waiterDocketCounters(prefix) > 5 Then
+            waiterDocketCounters(prefix) = 1
+        End If
+
+        Dim docketNum As Integer = waiterDocketCounters(prefix)
+        Return $"{prefix}-{docketNum:D2}"
+    End Function
+
     Private Sub cmbwaiter_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbwaiter.SelectedIndexChanged
+        ' Generate docket number based on waiter
+        currentDocketNumber = GenerateWaiterDocketNumber(cmbwaiter.Text)
+        Label2.Text = currentDocketNumber
+
         rtfReceipt.AppendText(vbCrLf + "Waiter:" + vbTab + cmbwaiter.Text + vbTab)
-        rtfReceiptB.AppendText(vbCrLf + "Waiter:" + vbTab + cmbwaiter.Text & " Inv No: " & Label2.Text)
+        rtfReceipt.AppendText("Docket: " & currentDocketNumber & vbCrLf)
+        rtfReceiptB.AppendText(vbCrLf + "Waiter:" + vbTab + cmbwaiter.Text & " Docket: " & currentDocketNumber)
         WaiterTextBox.Text = cmbwaiter.Text
         rtfReceiptB.AppendText(vbCrLf + "Time:" & DateTimePicker1.Value.ToLocalTime)
-        rtfReceiptC.AppendText(vbCrLf + "Waiter:" + vbTab + cmbwaiter.Text & " Inv No: " & Label2.Text)
+        rtfReceiptC.AppendText(vbCrLf + "Waiter:" + vbTab + cmbwaiter.Text & " Docket: " & currentDocketNumber)
         rtfReceiptC.AppendText(vbCrLf + "Time:" & DateTimePicker1.Value.ToLocalTime)
+        If cmbwaiter.Text <> "" And cmborder.Text <> "" Then
+            rtfReceipt.AppendText(vbCrLf + "-----------------------------------------------" + vbTab)
+            rtfReceipt.AppendText(vbCrLf + "CODE     QTY       PRICE    TOTAL" + vbTab)
+            Timer2.Stop()
+        End If
 
     End Sub
 
@@ -266,6 +323,11 @@ Public Class Entries
         OrderTextBox.Text = cmborder.Text
         rtfReceiptB.AppendText(vbCrLf + "Order:" + vbTab + cmborder.Text + vbCrLf)
         rtfReceiptC.AppendText(vbCrLf + "Order:" + vbTab + cmborder.Text + vbCrLf)
+        If cmbwaiter.Text <> "" And cmborder.Text <> "" Then
+            rtfReceipt.AppendText(vbCrLf + "-----------------------------------------------" + vbTab)
+            rtfReceipt.AppendText(vbCrLf + "CODE     QTY       PRICE    TOTAL" + vbTab)
+            Timer2.Stop()
+        End If
     End Sub
 
     Private Sub cmbCategory_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbCategory.SelectedIndexChanged
@@ -329,7 +391,7 @@ Public Class Entries
                 .Code = productCode,
                 .Description = productDescription & If(String.IsNullOrWhiteSpace(specialInstructions), "", " (" & specialInstructions & ")"),
                 .Quantity = quantity,
-                .Receipt = currentReceiptNumber,
+                .Receipt = currentDocketNumber,
                 .Price = price,
                 .Total = currentItemTotal,
                 .Date = DateTimePicker1.Value,
@@ -345,8 +407,8 @@ Public Class Entries
             runningTotal += currentItemTotal
             productCount += quantity
 
-            ' Update receipt display
-            UpdateReceiptDisplay(saleData)
+            ' Update docket display
+            UpdateDocketDisplay(saleData)
 
             ' Update totals display
             UpdateTotalsDisplay()
@@ -383,19 +445,19 @@ Public Class Entries
         End Select
     End Function
 
-    Private Sub UpdateReceiptDisplay(saleData As SaleData)
-        ' Update main receipt
+    Private Sub UpdateDocketDisplay(saleData As SaleData)
+        ' Update main docket
         rtfReceipt.AppendText(vbCrLf & saleData.Description & vbCrLf)
         rtfReceipt.AppendText(saleData.Code & vbTab & saleData.Quantity.ToString("F0") & vbTab & saleData.Price.ToString("F2") & vbTab & saleData.Total.ToString("F2"))
 
-        ' Update kitchen receipt
+        ' Update kitchen docket
         If IsKitchenItem(saleData.Description) Then
             rtfReceiptC.AppendText(vbCrLf & saleData.Quantity.ToString("F0") & "  " & saleData.Description)
         Else
             rtfReceiptB.AppendText(vbCrLf & saleData.Quantity.ToString("F0") & "  " & saleData.Description)
         End If
 
-        ' Update EOD receipt
+        ' Update EOD docket
         EOD.rtfReceipt.AppendText(vbCrLf & saleData.Description & vbCrLf)
         EOD.rtfReceipt.AppendText(saleData.Code & vbTab & saleData.Quantity.ToString("F0") & vbTab & saleData.Price.ToString("F2") & vbTab & saleData.Total.ToString("F2"))
     End Sub
@@ -439,20 +501,25 @@ Public Class Entries
                 End If
             Next
 
-            ' Complete the receipt
-            CompleteReceipt()
+            ' Complete the docket
+            CompleteDocket()
 
-            ' Print receipts
-            PrintReceipts()
+            ' Print dockets
+            PrintDockets()
 
             ' Update daily totals
             UpdateDailyTotals()
 
+            ' Store values before reset
+            Dim processedDocketNumber As String = currentDocketNumber
+            Dim processedCount As Integer = productCount
+            Dim processedTotal As Decimal = runningTotal
+
             ' Reset for next sale
             ResetForNextSale()
 
-            MessageBox.Show($"Sales Invoice number {currentReceiptNumber} successfully processed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            AuditLogger.Log("sale", "Cashier", $"receipt={currentReceiptNumber}; items={productCount}; total={runningTotal}")
+            MessageBox.Show($"Docket {processedDocketNumber} successfully processed!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            AuditLogger.Log("sale", "Cashier", $"docket={processedDocketNumber}; items={processedCount}; total={processedTotal}")
 
         Catch ex As BusinessLogicException
             MessageBox.Show($"Payment processing error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -461,8 +528,8 @@ Public Class Entries
         End Try
     End Sub
 
-    Private Sub CompleteReceipt()
-        ' Add totals to receipt
+    Private Sub CompleteDocket()
+        ' Add totals to docket
         rtfReceipt.AppendText(vbCrLf & vbCrLf & "---------------------------------------------------------------------------------------------------------------")
         rtfReceipt.AppendText(vbCrLf & "Number of items: " & productCount.ToString())
 
@@ -474,22 +541,22 @@ Public Class Entries
 
         rtfReceipt.AppendText(vbCrLf & vbCrLf & "Waiter: " & cmbwaiter.Text)
 
-        ' Update kitchen and beverage receipts
+        ' Update kitchen and beverage dockets
         rtfReceiptC.AppendText(vbCrLf & vbCrLf & "---")
         rtfReceiptB.AppendText(vbCrLf & vbCrLf & "---")
 
-        ' Update EOD receipt
+        ' Update EOD docket
         EOD.rtfReceipt.AppendText(vbCrLf & vbCrLf & "Number of items: " & productCount.ToString())
         EOD.rtfReceipt.AppendText(vbCrLf & "Total: " & runningTotal.ToString("F2"))
         EOD.rtfReceipt.AppendText(vbCrLf & "---------------------------------------------------------------------------------------------------------------")
     End Sub
 
-    Private Sub PrintReceipts()
+    Private Sub PrintDockets()
         Try
-            ' Print all receipt types
-            PrintDocument3.Print() ' Kitchen receipt
-            PrintDocument2.Print() ' Beverage receipt
-            PrintDocument1.Print() ' Customer receipt
+            ' Print all docket types
+            PrintDocument3.Print() ' Kitchen docket
+            PrintDocument2.Print() ' Beverage docket
+            PrintDocument1.Print() ' Customer docket
             PrintDocument1.Print() ' Duplicate for records
         Catch ex As Exception
             MessageBox.Show($"Printing error: {ex.Message}", "Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -518,9 +585,9 @@ Public Class Entries
     End Sub
 
     Private Sub ResetForNextSale()
-        ' Generate new receipt number
-        currentReceiptNumber = BusinessLogicLayer.GenerateReceiptNumber(DateTime.Today)
-        Label2.Text = currentReceiptNumber.PadLeft(3, "0"c)
+        ' Reset docket number - will be set when waiter is selected
+        currentDocketNumber = ""
+        Label2.Text = ""
 
         ' Reset totals
         runningTotal = 0
@@ -531,8 +598,8 @@ Public Class Entries
         lblTotal.Text = "0.00"
         lblZTotal.Text = "0.00"
 
-        ' Reset receipt displays
-        InitializeReceiptDisplay()
+        ' Reset docket displays
+        InitializeDocketDisplay()
         rtfReceiptB.Text = "BEVERAGES"
         rtfReceiptC.Text = "KITCHEN"
 
@@ -558,13 +625,13 @@ Public Class Entries
         End If
     End Sub
 
-    Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
-        If cmbwaiter.Text <> "" And cmborder.Text <> "" Then
-            rtfReceipt.AppendText(vbCrLf + "---------------------------------------------------------------------------------------------------------------" + vbTab)
-            rtfReceipt.AppendText(vbCrLf + "CODE     QTY       PRICE    TOTAL" + vbTab)
-            Timer2.Stop()
-        End If
-    End Sub
+    'Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
+    '    If cmbwaiter.Text <> "" And cmborder.Text <> "" Then
+    '        rtfReceipt.AppendText(vbCrLf + "-----------------------------------------------------" + vbTab)
+    '        rtfReceipt.AppendText(vbCrLf + "CODE     QTY       PRICE    TOTAL" + vbTab)
+    '        Timer2.Stop()
+    '    End If
+    'End Sub
 
     Private Sub zwd_Click(sender As Object, e As EventArgs) Handles zwd.Click
         Try
@@ -703,7 +770,7 @@ Public Class Entries
         End If
     End Sub
 
-    Private Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
+    Private Sub Button27_Click(sender As Object, e As EventArgs)
         If Login.txtPassword.Text = "1207" Or Login.txtPassword.Text = "1206" Then
             txtDtotal.Visible = True
         Else
@@ -775,15 +842,15 @@ Public Class Entries
         ' Handle Enter key
         If e.KeyCode = Keys.Enter Then
             e.Handled = True
-            AddSelectedProductToReceipt()
+            AddSelectedProductToDocket()
         End If
     End Sub
 
     Private Sub btnAddToReceipt_Click(sender As Object, e As EventArgs) Handles btnAddToReceipt.Click
-        AddSelectedProductToReceipt()
+        AddSelectedProductToDocket()
     End Sub
 
-    Private Sub AddSelectedProductToReceipt()
+    Private Sub AddSelectedProductToDocket()
         Try
             ' Validate required fields
             If String.IsNullOrWhiteSpace(cmbwaiter.Text) Then
@@ -821,7 +888,7 @@ Public Class Entries
                 .Code = selectedProduct.Code,
                 .Description = selectedProduct.Description & If(String.IsNullOrWhiteSpace(specialInstructions), "", " (" & specialInstructions & ")"),
                 .Quantity = quantity,
-                .Receipt = currentReceiptNumber,
+                .Receipt = currentDocketNumber,
                 .Price = price,
                 .Total = currentItemTotal,
                 .Date = DateTimePicker1.Value,
@@ -837,8 +904,8 @@ Public Class Entries
             runningTotal += currentItemTotal
             productCount += quantity
 
-            ' Update receipt display
-            UpdateReceiptDisplay(saleData)
+            ' Update docket display
+            UpdateDocketDisplay(saleData)
 
             ' Update totals display
             UpdateTotalsDisplay()
@@ -850,7 +917,7 @@ Public Class Entries
             HideQuantityInput()
 
             ' Show success feedback
-            ShowSuccessMessage($"Added {quantity}x {productDescription} to receipt")
+            ShowSuccessMessage($"Added {quantity}x {productDescription} to docket")
 
             ' Clear special instruction variables
             chickenType = ""

@@ -36,21 +36,20 @@ Public Class DatabaseSetup
                 End Using
 
                 If count = 0 Then
-                    Dim defaultHash As String = DataAccessLayer.HashPasswordWithSalt("1207")
                     Dim insertQuery As String = "INSERT INTO Users (AccType, Passcode) VALUES (?, ?)"
                     Using command As New OleDbCommand(insertQuery, connection)
-                        command.Parameters.AddWithValue("@AccType", "Cashier")
-                        command.Parameters.AddWithValue("@Passcode", defaultHash)
+                        command.Parameters.AddWithValue("?", "Cashier")
+                        command.Parameters.AddWithValue("?", "1207")
                         command.ExecuteNonQuery()
-                        
+
                         command.Parameters.Clear()
-                        command.Parameters.AddWithValue("@AccType", "Manager")
-                        command.Parameters.AddWithValue("@Passcode", defaultHash)
+                        command.Parameters.AddWithValue("?", "Manager")
+                        command.Parameters.AddWithValue("?", "1207")
                         command.ExecuteNonQuery()
-                        
+
                         command.Parameters.Clear()
-                        command.Parameters.AddWithValue("@AccType", "Supervisor")
-                        command.Parameters.AddWithValue("@Passcode", defaultHash)
+                        command.Parameters.AddWithValue("?", "Supervisor")
+                        command.Parameters.AddWithValue("?", "1207")
                         command.ExecuteNonQuery()
                     End Using
                 End If

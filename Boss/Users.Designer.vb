@@ -97,43 +97,63 @@ Partial Class Users
         '
         'btnMenu
         '
-        Me.btnMenu.ForeColor = System.Drawing.Color.Black
-        Me.btnMenu.Location = New System.Drawing.Point(369, 156)
+        Me.btnMenu.BackColor = System.Drawing.Color.FromArgb(CType(CType(149, Byte), Integer), CType(CType(165, Byte), Integer), CType(CType(166, Byte), Integer))
+        Me.btnMenu.FlatAppearance.BorderSize = 0
+        Me.btnMenu.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(127, Byte), Integer), CType(CType(140, Byte), Integer), CType(CType(141, Byte), Integer))
+        Me.btnMenu.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnMenu.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnMenu.ForeColor = System.Drawing.Color.White
+        Me.btnMenu.Location = New System.Drawing.Point(362, 156)
         Me.btnMenu.Name = "btnMenu"
-        Me.btnMenu.Size = New System.Drawing.Size(94, 23)
+        Me.btnMenu.Size = New System.Drawing.Size(105, 30)
         Me.btnMenu.TabIndex = 37
         Me.btnMenu.Text = "Back to Menu"
-        Me.btnMenu.UseVisualStyleBackColor = True
+        Me.btnMenu.UseVisualStyleBackColor = False
         '
         'btnLog
         '
-        Me.btnLog.ForeColor = System.Drawing.Color.Black
-        Me.btnLog.Location = New System.Drawing.Point(469, 156)
+        Me.btnLog.BackColor = System.Drawing.Color.FromArgb(CType(CType(231, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(60, Byte), Integer))
+        Me.btnLog.FlatAppearance.BorderSize = 0
+        Me.btnLog.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(43, Byte), Integer))
+        Me.btnLog.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnLog.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnLog.ForeColor = System.Drawing.Color.White
+        Me.btnLog.Location = New System.Drawing.Point(473, 156)
         Me.btnLog.Name = "btnLog"
-        Me.btnLog.Size = New System.Drawing.Size(75, 23)
+        Me.btnLog.Size = New System.Drawing.Size(90, 30)
         Me.btnLog.TabIndex = 36
         Me.btnLog.Text = "Log Out"
-        Me.btnLog.UseVisualStyleBackColor = True
+        Me.btnLog.UseVisualStyleBackColor = False
         '
         'btnDelete
         '
-        Me.btnDelete.ForeColor = System.Drawing.Color.Black
-        Me.btnDelete.Location = New System.Drawing.Point(469, 127)
+        Me.btnDelete.BackColor = System.Drawing.Color.FromArgb(CType(CType(231, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(60, Byte), Integer))
+        Me.btnDelete.FlatAppearance.BorderSize = 0
+        Me.btnDelete.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(57, Byte), Integer), CType(CType(43, Byte), Integer))
+        Me.btnDelete.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnDelete.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnDelete.ForeColor = System.Drawing.Color.White
+        Me.btnDelete.Location = New System.Drawing.Point(473, 122)
         Me.btnDelete.Name = "btnDelete"
-        Me.btnDelete.Size = New System.Drawing.Size(94, 23)
+        Me.btnDelete.Size = New System.Drawing.Size(90, 30)
         Me.btnDelete.TabIndex = 35
         Me.btnDelete.Text = "Delete"
-        Me.btnDelete.UseVisualStyleBackColor = True
+        Me.btnDelete.UseVisualStyleBackColor = False
         '
         'btnUpdate
         '
-        Me.btnUpdate.ForeColor = System.Drawing.Color.Black
-        Me.btnUpdate.Location = New System.Drawing.Point(362, 127)
+        Me.btnUpdate.BackColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(152, Byte), Integer), CType(CType(219, Byte), Integer))
+        Me.btnUpdate.FlatAppearance.BorderSize = 0
+        Me.btnUpdate.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(41, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(185, Byte), Integer))
+        Me.btnUpdate.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnUpdate.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnUpdate.ForeColor = System.Drawing.Color.White
+        Me.btnUpdate.Location = New System.Drawing.Point(362, 122)
         Me.btnUpdate.Name = "btnUpdate"
-        Me.btnUpdate.Size = New System.Drawing.Size(101, 23)
+        Me.btnUpdate.Size = New System.Drawing.Size(105, 30)
         Me.btnUpdate.TabIndex = 34
         Me.btnUpdate.Text = "Update"
-        Me.btnUpdate.UseVisualStyleBackColor = True
+        Me.btnUpdate.UseVisualStyleBackColor = False
         '
         'BossDataSet
         '
@@ -328,7 +348,7 @@ Partial Class Users
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(0, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
         Me.ClientSize = New System.Drawing.Size(583, 199)
         Me.Controls.Add(IDLabel)
         Me.Controls.Add(Me.IDTextBox)
@@ -348,7 +368,7 @@ Partial Class Users
         Me.MinimizeBox = False
         Me.Name = "Users"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Boss Cafe | User Management "
+        Me.Text = "User Management"
         CType(Me.BossDataSet, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.UsersBindingSource, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.UsersBindingNavigator, System.ComponentModel.ISupportInitialize).EndInit()

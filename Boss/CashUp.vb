@@ -85,9 +85,9 @@ Public Class CashUp
         Try
             Using sqlconn As New OleDb.OleDbConnection(My.Settings.BossConnectionString)
                 sqlconn.Open()
-                Dim command As String = "DELETE * FROM DTotals WHERE TDate = @Date"
+                Dim command As String = "DELETE * FROM DTotals WHERE Format([TDate], 'yyyy-mm-dd') = ?"
                 Using sql As New OleDbCommand(command, sqlconn)
-                    sql.Parameters.AddWithValue("@Date", Today.Date)
+                    sql.Parameters.AddWithValue("?", Today.Date.ToString("yyyy-MM-dd"))
                     sql.ExecuteNonQuery()
                 End Using
             End Using

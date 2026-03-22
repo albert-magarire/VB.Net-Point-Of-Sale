@@ -26,7 +26,7 @@
     <ProductName>Boss Cafe Point Of Sale System</ProductName>
     <PublisherName>Spacetime Softwares</PublisherName>
     <SuiteName>Spacetime Inc. 2023</SuiteName>
-    <ApplicationRevision>2</ApplicationRevision>
+    <ApplicationRevision>3</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>true</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -115,6 +115,7 @@
       <DependentUpon>BossDataSet.xsd</DependentUpon>
     </Compile>
     <Compile Include="BusinessLogicLayer.vb" />
+    <Compile Include="AuditLogger.vb" />
     <Compile Include="DataAccessLayer.vb" />
     <Compile Include="DatabaseSetup.vb" />
     <Compile Include="ValidationHelper.vb" />

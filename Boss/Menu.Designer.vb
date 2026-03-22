@@ -371,35 +371,35 @@ Partial Class Menu
         '
         Me.DataGridViewTextBoxColumn1.DataPropertyName = "Code"
         Me.DataGridViewTextBoxColumn1.HeaderText = "Code"
-        Me.DataGridViewTextBoxColumn1.Name = "DataGridViewTextBoxColumn1"
+        Me.DataGridViewTextBoxColumn1.Name = "Code"
         Me.DataGridViewTextBoxColumn1.Width = 60
         '
         'DataGridViewTextBoxColumn2
         '
         Me.DataGridViewTextBoxColumn2.DataPropertyName = "Description"
         Me.DataGridViewTextBoxColumn2.HeaderText = "Description"
-        Me.DataGridViewTextBoxColumn2.Name = "DataGridViewTextBoxColumn2"
+        Me.DataGridViewTextBoxColumn2.Name = "Description"
         Me.DataGridViewTextBoxColumn2.Width = 180
         '
         'DataGridViewTextBoxColumn3
         '
         Me.DataGridViewTextBoxColumn3.DataPropertyName = "Category"
         Me.DataGridViewTextBoxColumn3.HeaderText = "Category"
-        Me.DataGridViewTextBoxColumn3.Name = "DataGridViewTextBoxColumn3"
+        Me.DataGridViewTextBoxColumn3.Name = "Category"
         Me.DataGridViewTextBoxColumn3.Width = 120
         '
         'DataGridViewTextBoxColumn4
         '
         Me.DataGridViewTextBoxColumn4.DataPropertyName = "ZWL"
         Me.DataGridViewTextBoxColumn4.HeaderText = "ZWL"
-        Me.DataGridViewTextBoxColumn4.Name = "DataGridViewTextBoxColumn4"
+        Me.DataGridViewTextBoxColumn4.Name = "ZWL"
         Me.DataGridViewTextBoxColumn4.Width = 70
         '
         'DataGridViewTextBoxColumn5
         '
         Me.DataGridViewTextBoxColumn5.DataPropertyName = "USD"
         Me.DataGridViewTextBoxColumn5.HeaderText = "USD"
-        Me.DataGridViewTextBoxColumn5.Name = "DataGridViewTextBoxColumn5"
+        Me.DataGridViewTextBoxColumn5.Name = "USD"
         Me.DataGridViewTextBoxColumn5.Width = 70
         '
         'CodeTextBox
@@ -487,7 +487,7 @@ Partial Class Menu
         Me.MinimizeBox = False
         Me.Name = "Menu"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "Menu Management | Boss Cafe"
+        Me.Text = "Menu Management"
         CType(Me.BossDataSet, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.ProductsBindingSource, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.ProductsBindingNavigator, System.ComponentModel.ISupportInitialize).EndInit()

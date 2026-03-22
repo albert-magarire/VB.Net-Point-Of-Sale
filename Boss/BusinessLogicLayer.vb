@@ -272,10 +272,10 @@ Public Class BusinessLogicLayer
         Dim summary = DataAccessLayer.GetSalesSummary(targetDate)
         Dim waiterTotals = DataAccessLayer.GetWaiterTotals(targetDate)
 
-        sb.AppendLine("BOSS CAFE - END OF DAY REPORT")
+        sb.AppendLine("END OF DAY REPORT")
         sb.AppendLine(targetDate.ToLongDateString())
         sb.AppendLine(New String("-"c, 64))
-        sb.AppendLine($"Receipts: {summary.NumReceipts}")
+        sb.AppendLine($"Dockets: {summary.NumReceipts}")
         sb.AppendLine($"Items Sold: {summary.NumItems}")
         sb.AppendLine($"USD Total: {daily.UTotal:F2}")
         sb.AppendLine($"ZWL Total: {daily.ZTotal:F2}")

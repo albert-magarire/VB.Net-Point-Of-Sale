@@ -41,9 +41,9 @@ Partial Class CashUpDate
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.BackColor = System.Drawing.Color.MidnightBlue
-        Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Label1.ForeColor = System.Drawing.SystemColors.ButtonHighlight
+        Me.Label1.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
+        Me.Label1.Font = New System.Drawing.Font("Segoe UI", 11.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label1.ForeColor = System.Drawing.Color.White
         Me.Label1.Location = New System.Drawing.Point(19, 18)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(325, 20)
@@ -52,18 +52,24 @@ Partial Class CashUpDate
         '
         'btnDone
         '
+        Me.btnDone.BackColor = System.Drawing.Color.FromArgb(CType(CType(46, Byte), Integer), CType(CType(204, Byte), Integer), CType(CType(113, Byte), Integer))
+        Me.btnDone.FlatAppearance.BorderSize = 0
+        Me.btnDone.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(CType(CType(39, Byte), Integer), CType(CType(174, Byte), Integer), CType(CType(96, Byte), Integer))
+        Me.btnDone.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnDone.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnDone.ForeColor = System.Drawing.Color.White
         Me.btnDone.Location = New System.Drawing.Point(269, 82)
         Me.btnDone.Name = "btnDone"
-        Me.btnDone.Size = New System.Drawing.Size(75, 23)
+        Me.btnDone.Size = New System.Drawing.Size(75, 30)
         Me.btnDone.TabIndex = 2
         Me.btnDone.Text = "Continue"
-        Me.btnDone.UseVisualStyleBackColor = True
+        Me.btnDone.UseVisualStyleBackColor = False
         '
         'CashUpDate
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.BackColor = System.Drawing.Color.MidnightBlue
+        Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(30, Byte), Integer), CType(CType(39, Byte), Integer), CType(CType(46, Byte), Integer))
         Me.ClientSize = New System.Drawing.Size(356, 117)
         Me.Controls.Add(Me.btnDone)
         Me.Controls.Add(Me.Label1)
